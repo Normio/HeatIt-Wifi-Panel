@@ -1,6 +1,6 @@
 # The Heatit WiFi Panel API contract, as the OpenAPI spec actually states it
 
-Research resolving [issue #5](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/5).
+Research resolving [issue #5](https://github.com/Normio/HeatIt-Wifi-Panel/issues/5).
 
 ## Provenance
 

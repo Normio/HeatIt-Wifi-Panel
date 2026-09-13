@@ -1342,11 +1342,11 @@ point as the step before a push.
   "codeowners": ["@Normio"],
   "config_flow": true,
   "dhcp": [{ "registered_devices": true }],
-  "documentation": "https://github.com/Normio/HeatIt-Wifi-Home-Assistant",
+  "documentation": "https://github.com/Normio/HeatIt-Wifi-Panel",
   "import_executor": true,
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues",
+  "issue_tracker": "https://github.com/Normio/HeatIt-Wifi-Panel/issues",
   "requirements": [],
   "version": "0.1.0"
 }
@@ -1445,7 +1445,7 @@ green PR run does not predict the submission.
 Nightly-only HACS checks that no workflow can satisfy:
 
 ```
-gh repo edit Normio/HeatIt-Wifi-Home-Assistant \
+gh repo edit Normio/HeatIt-Wifi-Panel \
   --description "Home Assistant integration for the Heatit WiFi Panel wall heater (local HTTP API)" \
   --add-topic home-assistant --add-topic hacs --add-topic custom-component \
   --add-topic heatit --add-topic heater --add-topic climate
@@ -1714,7 +1714,7 @@ rather than a surprise.
 Corrections to this document after v1 was frozen. Each entry names the register row or issue that
 forced it, and the PR that carried it.
 
-**2026-09-13 — Q34's settle is "~8 s", not "~5 s"; `--thermal` needs no typed phrase** ([#89](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/89), [PR #90](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/pull/90)).
+**2026-09-13 — Q34's settle is "~8 s", not "~5 s"; `--thermal` needs no typed phrase** ([#89](https://github.com/Normio/HeatIt-Wifi-Panel/issues/89), [PR #90](https://github.com/Normio/HeatIt-Wifi-Panel/pull/90)).
 §5.2 and §10's button row said a settings reset "applies staggered over ~5 s", and the probe held
 Q34 to a strict 5.0 s. #74 called that a knife edge after the 600 W unit settled at exactly 5.0 s
 over 12 parameters. On the first full run of every tier on both units the 1000 W unit settled at
@@ -1726,7 +1726,7 @@ for on top of the flag. A stray character in it cost Q13 its verdict on the 1000
 sequence it names ran for Q20 anyway. The flag is the consent; one y/N, shared with
 `--destructive`, is the last look at which panel it lands on, and a no drops both tiers.
 
-**2026-09-12 — §3.4 had `config_entry=` both ignored and wired; the register's summary line is CI-checked** ([#79](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/79), [PR #83](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/pull/83)).
+**2026-09-12 — §3.4 had `config_entry=` both ignored and wired; the register's summary line is CI-checked** ([#79](https://github.com/Normio/HeatIt-Wifi-Panel/issues/79), [PR #83](https://github.com/Normio/HeatIt-Wifi-Panel/pull/83)).
 §3.4 said the coordinator's `config_entry=` argument "is ignored for custom integrations" and, in
 the same sentence, that it wires the shutdown on unload and honours `pref_disable_polling`. Both
 could not be true, and the first was wrong. Core only leaves the *omission* unenforced for custom
@@ -1737,7 +1737,7 @@ how many register rows are `disagrees`. The figure had drifted from ten to twelv
 sentence noticing. Both now send the reader to the register, whose summary line carries the count.
 §12.4 gains condition 7: `check_conformance.py` holds that line's three figures to the table.
 
-**2026-09-11 — §4.3's mDNS negative is hard, not soft** ([#32](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/32), PR pending).
+**2026-09-11 — §4.3's mDNS negative is hard, not soft** ([#32](https://github.com/Normio/HeatIt-Wifi-Panel/issues/32), PR pending).
 §4.3 called both discovery negatives soft, because link-local multicast could not cross the VLAN
 boundary. The site router turned out to reflect mDNS. A reflected browse is a real measurement once
 the panel's own-segment neighbours are seen answering in it. They did, within 100 ms, across 75 s
@@ -1757,30 +1757,30 @@ area. §4.4 now matches the room against the existing areas and drops it when no
 paragraph there records why. The unmatched case is the one Home Assistant already handles by
 offering its area picker.
 
-**2026-09-09 — `scripts/check_layout.py` joins §3.1 and §9.4** ([#36](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/36), PR #49).
+**2026-09-09 — `scripts/check_layout.py` joins §3.1 and §9.4** ([#36](https://github.com/Normio/HeatIt-Wifi-Panel/issues/36), PR #49).
 Three of #36's acceptance criteria have no upstream enforcer: no `strings.json` anywhere, brand
 assets nowhere else in the repository, and `hacs.json` holding exactly three keys. hassfest
 validates `strings.json` only when the file exists. The HACS Action never looks past `hacs.json`
 and the manifest. So §3.1's `scripts/` listing gains `check_layout.py`, and §9.4's command list
 gains one line. The script also asserts §10.1's fixed manifest keys and their order, and that no
 `quality_scale` key is present. **§9.2's failure condition 4 moves to `check_quality_scale.py` when
-that script lands ([#47](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/47)). It
+that script lands ([#47](https://github.com/Normio/HeatIt-Wifi-Panel/issues/47)). It
 does not live in both.**
 
-**2026-09-09 — `config_flow.py` ships with the scaffold** ([#36](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/36), PR #49).
+**2026-09-09 — `config_flow.py` ships with the scaffold** ([#36](https://github.com/Normio/HeatIt-Wifi-Panel/issues/36), PR #49).
 §3.1 lists it, but #36 named only `manifest.json` and `__init__.py`. hassfest *errors*, not
 warns, when a manifest declares `config_flow: true` and the file is absent. This holds for custom
 integrations. So the scaffold ships a `ConfigFlow` subclass with no steps.
-[#40](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/40) fills it in. `const.py` is
+[#40](https://github.com/Normio/HeatIt-Wifi-Panel/issues/40) fills it in. `const.py` is
 present for the same reason, holding `DOMAIN` alone.
 
-**2026-09-09 — §9.3's "ruff runs once, in its own `test.yml` job" is deferred, not dropped** ([#36](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/36), PR #49).
+**2026-09-09 — §9.3's "ruff runs once, in its own `test.yml` job" is deferred, not dropped** ([#36](https://github.com/Normio/HeatIt-Wifi-Panel/issues/36), PR #49).
 §9.4's "`test.yml` calls `scripts/check.sh`" was taken as the binding half. Until §8.7's rows
 exist, there is nothing to matrix over. So one job runs the whole script.
-[#38](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/38) adds the two rows and splits
+[#38](https://github.com/Normio/HeatIt-Wifi-Panel/issues/38) adds the two rows and splits
 ruff back out, so it does not run once per row.
 
-**2026-09-09 — `--destructive` also requires a terminal** ([#37](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/37)).
+**2026-09-09 — `--destructive` also requires a terminal** ([#37](https://github.com/Normio/HeatIt-Wifi-Panel/issues/37)).
 §12.2 reserves the `isatty()` requirement for `--thermal`. But a settings reset lands the panel at
 its documented defaults, comfort 21 °C in Heating mode, for the seconds until the restore. So on a
 cold day, `yes | probe.py --destructive` from a cron would close the relay. Both hazardous tiers
@@ -1789,12 +1789,12 @@ confirmation naming the check stays for `--thermal`. Register row Q18 also moves
 to the `write` tier in the same PR. Its evidence required writing `panelMode=0`, which no
 read-tier check may do.
 
-**2026-09-09 — required status checks join §10.3's human-applied list** ([#36](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/36), PR #49).
+**2026-09-09 — required status checks join §10.3's human-applied list** ([#36](https://github.com/Normio/HeatIt-Wifi-Panel/issues/36), PR #49).
 §9.3 says both linters "block a merge". §10.3 lists what a workflow cannot apply. Branch
 protection was named in neither. `Checks`, `HACS Action`, `hassfest` and `Changelog entry` must be
 marked required on `main` by the owner. Nothing in the repository can assert that they are.
 
-**2026-09-09 — the client ticket refines §3.2, §8.5 and §8.7** ([#38](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/38)).
+**2026-09-09 — the client ticket refines §3.2, §8.5 and §8.7** ([#38](https://github.com/Normio/HeatIt-Wifi-Panel/issues/38)).
 Three refinements came out of implementation. (1) §2.4's "quantise" and §8.5's "an off-step value
 raises locally" are reconciled as follows. A value within float noise of a grid point *is* that
 grid point (``0.1 * 3`` is ``0.3``). Anything further off the grid raises a local ``ValueError``
@@ -1811,35 +1811,35 @@ PR #49 are now `Lint`, `Tests (floor)`, `HACS Action`, `hassfest` and `Changelog
 `scripts/check.sh` takes a `lint` or `test` stage, so CI still runs the one shared file. The
 monthly cron runs both rows rather than the latest row alone, since the floor row is free and
 confirms the pin still installs. §8.7's `config_flow.py` coverage gate joins `check.sh` with the
-config flow ([#40](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/40)), because there
+config flow ([#40](https://github.com/Normio/HeatIt-Wifi-Panel/issues/40)), because there
 is no `config_flow.py` to cover yet. The shared redaction of §7.1 lives in `api.py` beside the
 parser it scrubs for. The fixture-only fifth placeholder for `name` (§8.3) is applied by
 `scripts/capture_fixtures.py` alone. Logging and diagnostics keep `name`.
 
-**2026-09-09 — the lockstep script is `scripts/check_release.py`, and joins §3.1** ([#39](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/39), PR #50).
+**2026-09-09 — the lockstep script is `scripts/check_release.py`, and joins §3.1** ([#39](https://github.com/Normio/HeatIt-Wifi-Panel/issues/39), PR #50).
 §10.2 describes the gate's third member without naming it. It is `scripts/check_release.py`. Only
 `release.yml` runs it. It needs a pushed tag, so it is the one script §9.4's entry point does not
 run. It writes the changelog section the publish job uses as the release body. Its tests live
 under `tests/scripts/`, a directory §8.7's layout did not list. `pytest` and mypy strict over
-`tests/` arrived with [#38](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/38) and
+`tests/` arrived with [#38](https://github.com/Normio/HeatIt-Wifi-Panel/issues/38) and
 cover them unchanged.
 
-**2026-09-09 — the gate calls `test.yml` whole, so §8.7's rows join it when they land** ([#39](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/39), PR #50).
+**2026-09-09 — the gate calls `test.yml` whole, so §8.7's rows join it when they land** ([#39](https://github.com/Normio/HeatIt-Wifi-Panel/issues/39), PR #50).
 §10.2 says the publish job needs "both pytest rows from §8.7, exposed via `workflow_call`". The
 rows did not exist when this was written
-([#38](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/38) added them). So
+([#38](https://github.com/Normio/HeatIt-Wifi-Panel/issues/38) added them). So
 `release.yml` calls `test.yml` and `validate.yml` as reusable workflows rather than naming jobs.
 Whatever either file holds is what a release must pass. #38 indeed changed nothing in
 `release.yml`.
 
-**2026-09-09 — §10.3's settings are applied, and `docs/releasing.md` records them** ([#39](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/39), PR #50).
+**2026-09-09 — §10.3's settings are applied, and `docs/releasing.md` records them** ([#39](https://github.com/Normio/HeatIt-Wifi-Panel/issues/39), PR #50).
 §10.3 says the description, topics and the `v*` tag ruleset "are still unapplied". As of this
 date, all three are applied, and so is the `main` ruleset with the required status checks from the
 amendment above. They were verified through the API. `docs/releasing.md` holds the procedure, the
 gate, the commands and the ruleset shapes, so the owner can check or restore them. §11.2's gate
 item 5 reads from there.
 
-**2026-09-10 — §8.7's `latest` row blocks a release, though it still never blocks a merge** ([#38](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/38), [#39](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/39), PR #50).
+**2026-09-10 — §8.7's `latest` row blocks a release, though it still never blocks a merge** ([#38](https://github.com/Normio/HeatIt-Wifi-Panel/issues/38), [#39](https://github.com/Normio/HeatIt-Wifi-Panel/issues/39), PR #50).
 §8.7 makes the `latest` row a signal rather than a blocker. §10.2 makes **both** pytest rows part
 of the release gate. Merging #38 and #39 put those two rules in direct contact, because a
 `continue-on-error` job in a called workflow fails without failing its caller. Both rules hold,
@@ -1851,7 +1851,7 @@ the caller and `github.ref` is the pushed tag. So `tests/scripts/test_release_ga
 including a bare literal and any expression containing `||`. The required status checks are
 unchanged. `Tests (latest)` is still not one of them.
 
-**2026-09-10 — the README's contract is wider than §11.3, and CI holds all of it** ([#48](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/48)).
+**2026-09-10 — the README's contract is wider than §11.3, and CI holds all of it** ([#48](https://github.com/Normio/HeatIt-Wifi-Panel/issues/48)).
 §11.3 names four README facts, and §8.5 asserts one of them, *three-way firmware consistency*.
 Meeting the HACS default checklist's "substantive docs: setup, entities, services, limitations —
 not two lines" needed three more. Each is asserted rather than trusted, in `tests/test_readme.py`:
@@ -1861,7 +1861,7 @@ not two lines" needed three more. Each is asserted rather than trusted, in `test
   climate entity names itself with (§5.2 makes that string the unique-id suffix too). **A platform
   ships its README rows in the same pull request as its module**, just as a new firmware ships its
   table row.
-  [#41](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/41)–[#47](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/47)
+  [#41](https://github.com/Normio/HeatIt-Wifi-Panel/issues/41)–[#47](https://github.com/Normio/HeatIt-Wifi-Panel/issues/47)
   each carry theirs. While no platform ships, the section is absent. That is why this ticket's
   README has none;
 - the stated Home Assistant floor equals `hacs.json`'s `homeassistant`, the version HACS refuses a
@@ -1885,7 +1885,7 @@ offering a manual copy into `custom_components/`. `README.md` joins §10.2's req
 HACS's own `information` check already assumed. `docs/releasing.md` carries the runbook half, on
 the release pull request's checklist.
 
-**2026-09-10 — §11.3's WiFi6 signpost is withdrawn** ([#48](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/48)).
+**2026-09-10 — §11.3's WiFi6 signpost is withdrawn** ([#48](https://github.com/Normio/HeatIt-Wifi-Panel/issues/48)).
 §11.3 requires "a **one-line signpost** for owners of the Heatit **WiFi6 thermostat** … so HACS
 users searching \"heatit\" pick the right one". [ADR-0001](../adr/0001-no-fork-of-heatit-wifi6.md)
 lists carrying it among that decision's consequences. The owner has withdrawn it. **The README
@@ -1900,7 +1900,7 @@ by the distinct domain `heatit_wifi_panel`, never by this line. The prior-art au
 brief and the register rows that cite the other device as **evidence** are records of what was
 investigated. They are not claims this integration makes. They stand unchanged.
 
-**2026-09-10 — the config flow and coordinator ticket refines §3.4, §3.5, §4.3, §4.6 and §6.2** ([#40](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/40)).
+**2026-09-10 — the config flow and coordinator ticket refines §3.4, §3.5, §4.3, §4.6 and §6.2** ([#40](https://github.com/Normio/HeatIt-Wifi-Panel/issues/40)).
 Five refinements. (1) §3.4's `entry.add_update_listener(_async_update_listener)` and §4.6's
 "applied by update listener → `async_reload`" are replaced by **`OptionsFlowWithReload`**. That
 class reloads the entry itself when the options change. Home Assistant's own documentation now
@@ -1912,7 +1912,7 @@ entry, `update_interval` is never changed in place, and all the panel's entities
 unavailable. (2) §3.5 builds `DeviceInfo` on the base entity. But this ticket ships **no
 platforms**, and its acceptance criteria require a device with zero entities. So the device is
 registered in `__init__.py` from the first status, immediately after `runtime_data` is assigned.
-`entity.py` ([#41](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/41)) needs only
+`entity.py` ([#41](https://github.com/Normio/HeatIt-Wifi-Panel/issues/41)) needs only
 `identifiers` to attach to it. The values, and the absent `configuration_url`, are §3.5's,
 unchanged. §4.4's "read at creation only" is taken literally for both fields it names. The registry
 honours `suggested_area` when it makes the device and ignores it afterwards. `name` is passed only
@@ -1936,7 +1936,7 @@ corrected to `ConfigEntryError`. The coordinator raises it at both moments from 
 translation key, the placeholders and everything the user sees are unchanged. The alternative was
 a `config_entry.state` check whose only effect would have been the wording of a core log line.
 
-**2026-09-10 — §7.3's `entry_data` is redacted by key, not by the shared redaction** ([#46](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/46)).
+**2026-09-10 — §7.3's `entry_data` is redacted by key, not by the shared redaction** ([#46](https://github.com/Normio/HeatIt-Wifi-Panel/issues/46)).
 §7.3 sends `entry_data` and `options` "through the shared redaction". But §7.1's function scrubs
 four dotted paths *of a status*, and `entry.data` holds `host` alone, which none of them names.
 Applied there it scrubs nothing. The download would then carry the user's local address in the one
@@ -1947,7 +1947,7 @@ exactly this, and reads `**REDACTED**`. The host is hidden for the same reason �
 reserves the shared scrub for the `raw` section, where a key-based helper can do nothing.
 `options` needs neither. The *poll interval* is a number the user chose.
 
-**2026-09-10 — the retained retry flag means the retry was *used*, not that it *worked*** ([#46](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/46)).
+**2026-09-10 — the retained retry flag means the retry was *used*, not that it *worked*** ([#46](https://github.com/Normio/HeatIt-Wifi-Panel/issues/46)).
 §3.2's retained state was written for §7.2's debug line, which fires only when a second attempt
 succeeds. §7.3's `last_poll` asks "whether the retry was used". The poll a user reports is usually
 the one where both attempts failed. The flag is now set when the second attempt is *made*. So a
@@ -1957,7 +1957,7 @@ the way out of every poll, good or bad. So the download describes the poll that 
 not the last one that happened to succeed. Its `outcome` is the poll's own translation key
 (`cannot_connect`, `missing_field`, `invalid_response`, `foreign_panel`), or `ok`.
 
-**2026-09-10 — §7.3's raw *headers* are scrubbed by value, and the download names the poll interval** ([#46](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/46)).
+**2026-09-10 — §7.3's raw *headers* are scrubbed by value, and the download names the poll interval** ([#46](https://github.com/Normio/HeatIt-Wifi-Panel/issues/46)).
 Two refinements the download itself forced. (1) §7.3 sends body *and headers* "through the same
 wire-level scrub". But that scrub is a substitution on `"key": "value"` JSON pairs. A header is
 neither JSON nor keyed by anything it carries. Applied to one, the scrub does nothing.
@@ -1974,7 +1974,7 @@ stored options, the truth about the entry. `poll_interval_seconds` beside it is 
 force. Both are needed. A bug report needs the effective number, and a reviewer needs to know
 whether the user ever chose it.
 
-**2026-09-11 — the climate ticket refines §3.5, §5.3, §6.4 and §6.5** ([#41](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/41)).
+**2026-09-11 — the climate ticket refines §3.5, §5.3, §6.4 and §6.5** ([#41](https://github.com/Normio/HeatIt-Wifi-Panel/issues/41)).
 Four refinements. (1) §3.5 requires every platform's entities to carry a frozen entity
 description with `value_fn` / `set_value_fn`. **The climate entity carries none.** It is the whole
 of its platform. `_attr_name = None` marks it the main feature. A description holding one entity's
@@ -2004,9 +2004,9 @@ would report a *silent undo* that never happened. And `DataUpdateCoordinator` ca
 debounced refresh when a scheduled poll runs, so no later refresh would correct it before the next
 *poll interval*.
 
-**2026-09-11 — the switch and select platforms refine §3.5** ([#43](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/43)).
+**2026-09-11 — the switch and select platforms refine §3.5** ([#43](https://github.com/Normio/HeatIt-Wifi-Panel/issues/43)).
 §3.5 has every entity description carry `value_fn` / `set_value_fn` callables. The amendment of
-[#41](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/41) let the climate entity out
+[#41](https://github.com/Normio/HeatIt-Wifi-Panel/issues/41) let the climate entity out
 of descriptions altogether, while holding the rule for "the five description-driven platforms".
 The two platforms that landed here are description-driven and carry **no callables**.
 `HeatitSwitchDescription` holds the parameter's wire name. `HeatitSelectDescription` holds that
@@ -2018,7 +2018,7 @@ switch writes what it reads. §3.5's point is that the *table* holds what varies
 rather than a class per entity. A description naming one registry parameter holds exactly that.
 The callables stay for a platform whose reading is **not** one parameter. `sensor.py` and
 `binary_sensor.py`, merged alongside this from
-[#44](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/44), carry a `read_path` and a
+[#44](https://github.com/Normio/HeatIt-Wifi-Panel/issues/44), carry a `read_path` and a
 `value_fn` for exactly that reason. Their rows read top-level *status* fields the registry holds
 no descriptor for, and the signal strength needs a parse rather than a lookup. So the rule is
 **narrowed to "where the value is not one *observed parameter*"** rather than dropped. The two
@@ -2028,7 +2028,7 @@ wire name into a read path. That moves to a second base class in `entity.py`,
 `HeatitParameterEntity`. So §3.5's "a base `CoordinatorEntity` supplying `DeviceInfo` and the
 availability rule" now describes two classes: that one, and the parameter binding on top of it.
 
-**2026-09-11 — the number ticket refines §3.5, §5.2 and §5.3** ([#42](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/42)).
+**2026-09-11 — the number ticket refines §3.5, §5.2 and §5.3** ([#42](https://github.com/Normio/HeatIt-Wifi-Panel/issues/42)).
 Three refinements, on top of #43's narrowing of §3.5 above. `number.py` sits inside that
 narrowing. A number *is* one *observed parameter*, so `HeatitNumberDescription` holds that
 parameter's wire name and no `value_fn`. (1) It does carry two callables. The narrowing does not
@@ -2046,7 +2046,7 @@ bounds on a *setpoint bank* where a *temperature limit* is absent. **Both setpoi
 same two readings on the same terms.** So the fallback moves to the coordinator as
 `minimum_temperature` / `maximum_temperature`, and is written once rather than per platform.
 
-**2026-09-11 — §4.3's quiet abort carries the reason validation found** ([#60](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/60), PR pending).
+**2026-09-11 — §4.3's quiet abort carries the reason validation found** ([#60](https://github.com/Normio/HeatIt-Wifi-Panel/issues/60), PR pending).
 §4.3 asked for a quiet abort and named no reason. `async_step_dhcp` picked `cannot_connect` for
 both branches. So a host answering at the discovered address without being a panel aborted with
 *Nothing answered at that address*. That is false for exactly that branch. The reason is now the
@@ -2058,7 +2058,7 @@ discards its result, so the reason reaches no card and no log line. It is correc
 string that ships must be a string that is true, not because anyone reads this one. Step 4 names
 the pair rather than leaving it to the code.
 
-**2026-09-11 — what the 1.5 s refresh sees after a settings reset, and where the load limit lands** ([#73](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/73)).
+**2026-09-11 — what the 1.5 s refresh sees after a settings reset, and where the load limit lands** ([#73](https://github.com/Normio/HeatIt-Wifi-Panel/issues/73)).
 §5.2 said the reset "applies staggered over ~5 s, so the 1.5 s refresh sees a partial reset and
 the next poll completes it". The outcome is right. The mechanism was an assumption. On the #45
 hardware run, at **1.8 s** after the acknowledgement **no parameter had moved at all**. All four
@@ -2074,7 +2074,7 @@ document's fixed 15, which that unit rejects anyway (Q17). The row is `verified 
 `disagrees`. The probe's check compares the load limit against `maxLoad`, so a firmware that
 honours the document would fail it.
 
-**2026-09-11 — the quality-scale gate runs in the test stage, reads the manifest's version, and holds the icon rule one way** ([#47](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/47)).
+**2026-09-11 — the quality-scale gate runs in the test stage, reads the manifest's version, and holds the icon rule one way** ([#47](https://github.com/Normio/HeatIt-Wifi-Panel/issues/47)).
 Three refinements.
 
 (1) §9.2 says `scripts/check_quality_scale.py` is "run from `test.yml`", and §9.4 groups it with
@@ -2091,7 +2091,7 @@ the tag equal to it, so on a tag they are one number. On a pull request the mani
 version there is. So the pull request that bumps it to `1.0.0` is the one that fails on a leftover
 `todo`, before any tag exists. No rule is `todo` today. Every row of §9.1's "everything else"
 shipped by 0.3.0. The `discovery` comment is §9.1's text word for word while register row Q28
-stays open. When [#32](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/32) closes it,
+stays open. When [#32](https://github.com/Normio/HeatIt-Wifi-Panel/issues/32) closes it,
 the comment moves with the table.
 
 (3) §9.2's table has `icon-translations` assert that every `translation_key` "resolves in
@@ -2106,7 +2106,7 @@ condition 3 gains a clause. `common-modules` names two modules, and a second pat
 comment's free text was evidence in name only. So every word starting with a top-level directory
 of the tree is checked to exist, not the first alone.
 
-**2026-09-12 — the README no longer has to recommend a static DHCP reservation** ([#82](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/pull/82)).
+**2026-09-12 — the README no longer has to recommend a static DHCP reservation** ([#82](https://github.com/Normio/HeatIt-Wifi-Panel/pull/82)).
 §4.5 says the README recommends a static DHCP reservation, and §11.3 lists it as a required README
 item. `tests/test_readme.py` held that promise. The owner dropped the sentence from the README, and
 the test with it. The host is still not an options field. The DHCP IP-follow of §4.3 is what keeps

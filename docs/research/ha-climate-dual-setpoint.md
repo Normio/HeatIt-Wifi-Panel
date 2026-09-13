@@ -1,11 +1,11 @@
 # HA climate contract for preset-switched dual setpoints
 
-Research for [issue #6](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/6).
+Research for [issue #6](https://github.com/Normio/HeatIt-Wifi-Panel/issues/6).
 Sources are the Home Assistant developer docs, the `home-assistant/core` source at `dev`, and the
 `home-assistant/architecture` discussion tracker. Read 2026-09-07 against core `dev`.
 
 **Scope note.** This ticket describes *what HA expects*. The decision for our integration is
-[#8](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/8). The recommendation at the end
+[#8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8). The recommendation at the end
 shows its reasoning so #8 can overturn it.
 
 ## The problem restated

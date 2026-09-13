@@ -1,6 +1,6 @@
 # HACS default repository: requirements and release process
 
-This research resolves [#3](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/3). Its parent map is [#1](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/1).
+This research resolves [#3](https://github.com/Normio/HeatIt-Wifi-Panel/issues/3). Its parent map is [#1](https://github.com/Normio/HeatIt-Wifi-Panel/issues/1).
 Researched 2026-09-07 against live sources.
 
 **Target:** get `heatit_wifi_panel` into the HACS default list. Keep the option of Home Assistant **core** inclusion open for later.
@@ -201,10 +201,10 @@ Proposed manifest. It is HACS-valid, hassfest-valid, and as close to core-shaped
   "name": "Heatit WiFi Panel",
   "codeowners": ["@Normio"],
   "config_flow": true,
-  "documentation": "https://github.com/Normio/HeatIt-Wifi-Home-Assistant",
+  "documentation": "https://github.com/Normio/HeatIt-Wifi-Panel",
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues",
+  "issue_tracker": "https://github.com/Normio/HeatIt-Wifi-Panel/issues",
   "requirements": [],
   "version": "0.1.0"
 }
@@ -271,7 +271,7 @@ The "no ignores" clause is real. The PR template asks for a "Link to successful 
 
 ### 4.3 The PR itself
 
-Add `"Normio/HeatIt-Wifi-Home-Assistant"` to [`integration`](https://github.com/hacs/default/blob/master/integration). That file is a plain JSON array of `"owner/repo"` strings. It has no file extension, a 2-space indent, and **no trailing newline**. Each entry matches `^[\w\.-]+\/[\w\.-]+$`.
+Add `"Normio/HeatIt-Wifi-Panel"` to [`integration`](https://github.com/hacs/default/blob/master/integration). That file is a plain JSON array of `"owner/repo"` strings. It has no file extension, a 2-space indent, and **no trailing newline**. Each entry matches `^[\w\.-]+\/[\w\.-]+$`.
 
 **Sorting is case-INSENSITIVE.** [`scripts/sort.py`](https://github.com/hacs/default/blob/master/scripts/sort.py):
 
@@ -283,7 +283,7 @@ and [`scripts/is_sorted.py`](https://github.com/hacs/default/blob/master/scripts
 
 **The diff must be exactly `+1 / -0` on exactly one file.** A `+1/-1` means you deleted somebody else's entry without noticing. See [#8246](https://github.com/hacs/default/pull/8246): "`+1/-1` on this file is the tell; a store addition should always be `+1/-0`".
 
-Casing must match GitHub's actual repo name exactly: `Normio/HeatIt-Wifi-Home-Assistant`, not lowercased. Eight recent PRs were auto-closed for `**Repository name case mismatch.**`
+Casing must match GitHub's actual repo name exactly: `Normio/HeatIt-Wifi-Panel`, not lowercased. Eight recent PRs were auto-closed for `**Repository name case mismatch.**`
 
 Rules from `include.md`:
 
@@ -345,7 +345,7 @@ Every box must be `[x]`. For an integration, **all three links** must be filled.
 | 6 | `**Limit your PR to a single file change.**` |
 | 1 | `**This author is blocked from publishing to HACS.**` |
 
-Our repo name, `HeatIt-Wifi-Home-Assistant`, contains no "HACS". That is fine.
+Our repo name, `HeatIt-Wifi-Panel`, contains no "HACS". That is fine.
 
 **CI jobs** ([`checks.yml`](https://github.com/hacs/default/blob/master/.github/workflows/checks.yml), gated on the `New default repository` label):
 
@@ -740,7 +740,7 @@ These do not conflict for the HACS deliverable. They mean a future core submissi
 - [ ] **Topics** set, for example `home-assistant`, `homeassistant`, `hacs`, `custom-component`, `heatit`, `climate`, `thermostat`.
 - [ ] **Issues enabled**.
 - [ ] Not archived.
-- [ ] Repo name contains no "HACS". `HeatIt-Wifi-Home-Assistant` is fine.
+- [ ] Repo name contains no "HACS". `HeatIt-Wifi-Panel` is fine.
 - [ ] `LICENSE` at root, MIT, and GitHub's sidebar reads "MIT license".
 
 ### 9.2 Repo contents
@@ -777,7 +777,7 @@ These do not conflict for the HACS deliverable. They mean a future core submissi
 - [ ] Fork `hacs/default` **to a personal account** (not an org).
 - [ ] Branch off `master`. Do **not** PR from `master`.
 - [ ] Enable "Allow edits from maintainers".
-- [ ] Add `"Normio/HeatIt-Wifi-Home-Assistant"` to `integration`, with exact GitHub casing, in **case-insensitive** alphabetical position.
+- [ ] Add `"Normio/HeatIt-Wifi-Panel"` to `integration`, with exact GitHub casing, in **case-insensitive** alphabetical position.
 - [ ] Diff is exactly `+1 / -0` on exactly one file. No reformatting, no re-sorting, no trailing newline change, no leading space inside the quotes.
 - [ ] Branch up to date with `master`.
 - [ ] Every template checkbox `[x]`. All **three** links filled (release, HACS action run, hassfest run).

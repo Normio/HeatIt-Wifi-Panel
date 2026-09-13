@@ -7,7 +7,7 @@ wall heater. It drives the panel over its local HTTP API.
 
 ### Issue tracker
 
-Issues are GitHub issues in `Normio/HeatIt-Wifi-Home-Assistant`, managed with
+Issues are GitHub issues in `Normio/HeatIt-Wifi-Panel`, managed with
 the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels

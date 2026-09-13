@@ -7,12 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-09-12
+
+The repository moved. The links on the integration's page follow it.
+
 ### Changed
 
-- The setup dialog, the options dialog and the log lines use plainer
-wording.
+- The documentation and issue links on the integration's page now point at
+`Normio/HeatIt-Wifi-Panel`
 - The settings reset is documented as settling within about 8 s, not 5 s.
 A 1000 W unit took 5.2 s.
+
+## [0.4.0] - 2026-09-12
+
+The setup dialog, the options dialog and the log lines use plainer wording.
+
+### Changed
+
+- The setup dialog wording
+- The options dialog wording
+
+### Verified
+
+- A **1000 W panel** at firmware **1.21**.
 
 ## [0.3.0] - 2026-09-11
 
@@ -86,11 +103,11 @@ placeholders.
 - The climate entity has off and heat, with **comfort and eco as presets**. The
 target temperature follows whichever setpoint the panel is heating to. So it
 moves with the preset, and it is blank while the panel is off
-([ADR-0004](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/blob/main/docs/adr/0004-eco-as-a-climate-preset.md)). Whether the
+([ADR-0004](https://github.com/Normio/HeatIt-Wifi-Panel/blob/main/docs/adr/0004-eco-as-a-climate-preset.md)). Whether the
 element is on comes from the panel's relay, not from its reported power.
 
 ### Verified
 
 - Firmware **1.21** on a 600 W panel. The evidence is recorded in the
-[conformance register](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/blob/main/docs/conformance/checklist.md).
+[conformance register](https://github.com/Normio/HeatIt-Wifi-Panel/blob/main/docs/conformance/checklist.md).
 

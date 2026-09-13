@@ -117,7 +117,7 @@ commands and the ruleset shapes are here so they can be checked or restored.
 `topics` read them:
 
 ```sh
-gh repo edit Normio/HeatIt-Wifi-Home-Assistant \
+gh repo edit Normio/HeatIt-Wifi-Panel \
   --description "Home Assistant integration for the Heatit WiFi Panel wall heater (local HTTP API)" \
   --add-topic home-assistant --add-topic hacs --add-topic custom-component \
   --add-topic heatit --add-topic heater --add-topic climate
@@ -149,5 +149,5 @@ request blocks on a job that no longer runs, with every check green.
 Check both with:
 
 ```sh
-gh api repos/Normio/HeatIt-Wifi-Home-Assistant/rulesets --jq '.[] | "\(.name) \(.target) \(.enforcement)"'
+gh api repos/Normio/HeatIt-Wifi-Panel/rulesets --jq '.[] | "\(.name) \(.target) \(.enforcement)"'
 ```

@@ -1,9 +1,9 @@
 # Prior art audit: `mattik-gh/heatit_wifi6`
 
-Research output for [issue #4](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/4), *Research: audit mattik-gh/heatit_wifi6 against current standards*.
-Parent map: [issue #1](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/1).
+Research output for [issue #4](https://github.com/Normio/HeatIt-Wifi-Panel/issues/4), *Research: audit mattik-gh/heatit_wifi6 against current standards*.
+Parent map: [issue #1](https://github.com/Normio/HeatIt-Wifi-Panel/issues/1).
 
-**Scope note.** This document gives **no fork / read-and-rewrite / ignore verdict**. The map owner changed the scope and moved that decision to [issue #16](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/16). Issue #16 is blocked on this ticket, on [#2](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/2) (current HA conventions) and on [#3](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/3) (HACS default requirements). This document only collects facts. It is laid out so someone else can score them.
+**Scope note.** This document gives **no fork / read-and-rewrite / ignore verdict**. The map owner changed the scope and moved that decision to [issue #16](https://github.com/Normio/HeatIt-Wifi-Panel/issues/16). Issue #16 is blocked on this ticket, on [#2](https://github.com/Normio/HeatIt-Wifi-Panel/issues/2) (current HA conventions) and on [#3](https://github.com/Normio/HeatIt-Wifi-Panel/issues/3) (HACS default requirements). This document only collects facts. It is laid out so someone else can score them.
 
 **Method.** This audit cloned the repository and read all of it. That covers all 1,548 lines of Python in both shipped integration directories, the vendored OpenAPI document, `manifest.json`, `hacs.json` and the complete git history. Requirements come from primary sources: the developers.home-assistant.io rule pages and the `home-assistant/core` source itself. Each is cited inline. The README was read, but no judgement here rests on it.
 
@@ -217,7 +217,7 @@ This is the sharpest difference, and it is on the write path.
 
 The parameter is renamed, so a literal copy fails loudly. `operatingMode` gets HTTP 400/422 on a Panel, which is the safe failure. The hazard is the *plausible adaptation*: rename the key to `panelMode` and keep the value map. Then `async_set_preset_mode(PRESET_ECO)` writes `panelMode=3`, which is out of range. And `HVACMode.COOL` writes `panelMode=2`, which silently puts the heater into **Eco** instead of cooling. The Panel has no cooling function at all. `coolingSetpoint` does not exist on it.
 
-The WiFi6 climate code also mixes mode and preset in a way the Panel cannot inherit. `operatingMode=3` (eco) is reported as `HVACMode.HEAT` + `PRESET_ECO`. But `async_set_hvac_mode(HEAT)` writes `operatingMode=1`, which silently clears eco. And `async_set_preset_mode` writes the mode directly, so selecting a preset while the device is OFF turns it on. **These are exactly the semantics [issue #8](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/8) must decide, and this prior art gets them wrong.**
+The WiFi6 climate code also mixes mode and preset in a way the Panel cannot inherit. `operatingMode=3` (eco) is reported as `HVACMode.HEAT` + `PRESET_ECO`. But `async_set_hvac_mode(HEAT)` writes `operatingMode=1`, which silently clears eco. And `async_set_preset_mode` writes the mode directly, so selecting a preset while the device is OFF turns it on. **These are exactly the semantics [issue #8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8) must decide, and this prior art gets them wrong.**
 
 ### 4.4 Renamed, analogous concept
 
@@ -256,7 +256,7 @@ Every one of these belongs to a *floor thermostat that drives an external relay 
 
 **The two devices share the endpoint shapes but not the parameters.** "Almost identical" holds for *how you talk to the device*: URL shapes, query-string writes, write echoes, and `DELETE` resets. It fails for *what you can say*. Only 5 of 25 parameters are identical. The mode parameter is renamed and has new values. The network key has a different case. Roughly half of the WiFi6 surface models floor-heating hardware the Panel does not have.
 
-The differences are concentrated **on the write path**: `panelMode` values, the number of `disableButtons` values, `sensorMode` type. This is the failure the ticket warned about. Two of them (`Network` casing, `panelMode`=2) fail *silently* rather than loudly. This finding is direct input to [#7 the parameter-write contract](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/7) and [#8 climate modes and presets](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/8).
+The differences are concentrated **on the write path**: `panelMode` values, the number of `disableButtons` values, `sensorMode` type. This is the failure the ticket warned about. Two of them (`Network` casing, `panelMode`=2) fail *silently* rather than loudly. This finding is direct input to [#7 the parameter-write contract](https://github.com/Normio/HeatIt-Wifi-Panel/issues/7) and [#8 climate modes and presets](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8).
 
 ---
 
@@ -272,7 +272,7 @@ This list does not judge whether we should take them. That is #16's call. Each i
 | K2 | **Startup congestion with multiple devices.** Upstream issues #4 and #5 document, from several users independently, that polling 5–6 Heatit WiFi devices at the same time on 2.4 GHz at HA restart makes most of them time out and land permanently "unavailable". `atlehogberg` reports 4 of 5 failing consistently. | Real operational evidence that bears directly on the map's open "multi-panel topology" question. The *problem* is credible, but the *fix* in this repo (`asyncio.sleep` in setup) is wrong. The correct answers are `ConfigEntryNotReady` + HA's own retry, a shared session with a connector limit, and generous timeouts. |
 | K3 | **`coolingSetpoint` / mode-value collision.** §4.3. | Prevents a specific, silent, plausible bug in our climate implementation. |
 | K4 | **Heatit's own specs contain errors.** D10. | Independent support for the map's insistence on a conformance checklist. |
-| K5 | **The maintainer's argument against eco-as-preset.** Upstream issue #5: eco is *"a preset rather than a distinct operating mode"*, and HA can manage setpoints centrally without it. `atlehogberg` counters that he wants a device-local fallback setpoint that survives HA or WiFi going down. | A real, spelled-out design debate on exactly the question [#8](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/8) must settle. Worth reading both sides. |
+| K5 | **The maintainer's argument against eco-as-preset.** Upstream issue #5: eco is *"a preset rather than a distinct operating mode"*, and HA can manage setpoints centrally without it. `atlehogberg` counters that he wants a device-local fallback setpoint that survives HA or WiFi going down. | A real, spelled-out design debate on exactly the question [#8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8) must settle. Worth reading both sides. |
 | K6 | **Users want energy/power as first-class entities, not attributes.** Upstream issues #3, #9 and PR #8 are all the same request. | Validates the map's "full v1 entity surface" decision against real user demand. |
 
 ### 5.2 Code and artefacts — would trigger attribution if copied
@@ -281,10 +281,10 @@ This list does not judge whether we should take them. That is #16's call. Each i
 | --- | --- | --- |
 | C1 | **The vendored WiFi6 OpenAPI v7.0.0 YAML** (`custom_components/heatit_wifi6/docs/Heatit_WiFi6_OpenAPI_v70.yaml`, 992 lines) | Not the maintainer's work. It is Heatit's document, and the authoritative Panel equivalent is v12.0.0 from Heatit directly. Its value here is **comparative**: it shows how Heatit's spec conventions changed between v7 and v12, and it is the source of the D10 error evidence. Reference material, not a reuse candidate. |
 | C2 | **HTTP client shape** (`api.py`, 165 lines) | The method surface (`get_status()`, `set_parameter()`, `reset_device(type)`) is a reasonable shape and close to what the handoff already proposes. But the *implementation* fails on four counts: per-request session creation (§3.2 #8), universal error swallowing (#9), JSON body instead of query string (D3), and the `"Success"` casing bug (D2). The idea is worth ~10 minutes of thought. The code is a liability. |
-| C3 | **Config flow** (`config_flow.py`, 41 lines) | 41 lines with no connection test, no `unique_id`, no error handling, and a user-typed `CONF_NAME` that should not exist. There is almost nothing here. [#10](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/10) starts from a blank page either way. |
+| C3 | **Config flow** (`config_flow.py`, 41 lines) | 41 lines with no connection test, no `unique_id`, no error handling, and a user-typed `CONF_NAME` that should not exist. There is almost nothing here. [#10](https://github.com/Normio/HeatIt-Wifi-Panel/issues/10) starts from a blank page either way. |
 | C4 | **Parameter-to-entity mapping table** | **Does not exist.** There is no `EntityDescription` table anywhere in the repository. Parameters are hand-copied one line at a time into a 38-key `extra_state_attributes` dict. The single most valuable artefact for our purposes is the one thing this prior art does not contain. |
-| C5 | **Test setup** | **Does not exist.** Zero tests, no CI. Nothing for [#12](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/12) to build on. |
-| C6 | **`lvlie`'s Prism-mock CI pipeline.** Described in upstream issue #9. It lives in the `lvlie/heatit_wifi6` fork, *not* in `mattik-gh/main`. It mocks the device from the OpenAPI spec using Stoplight Prism, boots Home Assistant, installs the custom integration, drives it via an injected automation, and asserts the HA log is clean. | **The most interesting single artefact in this repository's orbit**, and it is not in the repository. It targets the map's hardest constraint, "no hardware", by generating a device simulator directly from the spec we already have. Same MIT licence via the fork. Flagged as a candidate for [#12](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/12). The author self-describes it as vibe-coded and unreviewed, so it is a *technique* worth evaluating more than a codebase worth importing. This audit has not yet verified it independently. |
+| C5 | **Test setup** | **Does not exist.** Zero tests, no CI. Nothing for [#12](https://github.com/Normio/HeatIt-Wifi-Panel/issues/12) to build on. |
+| C6 | **`lvlie`'s Prism-mock CI pipeline.** Described in upstream issue #9. It lives in the `lvlie/heatit_wifi6` fork, *not* in `mattik-gh/main`. It mocks the device from the OpenAPI spec using Stoplight Prism, boots Home Assistant, installs the custom integration, drives it via an injected automation, and asserts the HA log is clean. | **The most interesting single artefact in this repository's orbit**, and it is not in the repository. It targets the map's hardest constraint, "no hardware", by generating a device simulator directly from the spec we already have. Same MIT licence via the fork. Flagged as a candidate for [#12](https://github.com/Normio/HeatIt-Wifi-Panel/issues/12). The author self-describes it as vibe-coded and unreviewed, so it is a *technique* worth evaluating more than a codebase worth importing. This audit has not yet verified it independently. |
 
 ### 5.3 Naming and collision
 
@@ -301,7 +301,7 @@ This list does not judge whether we should take them. That is #16's call. Each i
 
 ## 6. Decision deferred
 
-**This document does NOT make the fork / read-and-rewrite / ignore decision.** That decision goes to [issue #16](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/16). Issue #16 is blocked on this ticket, on [#2](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/2) (current HA integration conventions) and on [#3](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/3) (HACS default repository requirements).
+**This document does NOT make the fork / read-and-rewrite / ignore decision.** That decision goes to [issue #16](https://github.com/Normio/HeatIt-Wifi-Panel/issues/16). Issue #16 is blocked on this ticket, on [#2](https://github.com/Normio/HeatIt-Wifi-Panel/issues/2) (current HA integration conventions) and on [#3](https://github.com/Normio/HeatIt-Wifi-Panel/issues/3) (HACS default repository requirements).
 
 ### Open questions #16 will need answered
 
@@ -333,4 +333,4 @@ This list does not judge whether we should take them. That is #16's call. Each i
 
 *Note on divergence:* several HACS rules are enforced in code but missing from the docs pages. The `license` check (OSI-approved SPDX, added 2026-07) and the `integration_manifest` check are not documented on the HACS Action page. `hacs.json` is validated with `PREVENT_EXTRA`, so unknown keys hard-fail. The "one subdirectory" rule is documented but *not* enforced. Where docs and code disagree, this document follows the code and says so.
 
-**Project.** `.orca/drops/heatit-wifi-panel-ha-integration.md` (the Panel API v12.0.0 transcription used for §4). Issues [#1](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/1) and [#4](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/4).
+**Project.** `.orca/drops/heatit-wifi-panel-ha-integration.md` (the Panel API v12.0.0 transcription used for §4). Issues [#1](https://github.com/Normio/HeatIt-Wifi-Panel/issues/1) and [#4](https://github.com/Normio/HeatIt-Wifi-Panel/issues/4).

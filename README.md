@@ -17,14 +17,14 @@ service, no account, and no vendor app in the path once the panel is on WiFi.
 Install this integration through [HACS](https://hacs.xyz) as a custom
 repository.
 
-![Open this repository inside your Home Assistant's HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)
+[![Open this repository inside your Home Assistant's HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Normio&repository=HeatIt-Wifi-Panel&category=integration)
 
 The button opens HACS on this repository in your own Home Assistant. To do the
 same by hand:
 
 1. In HACS, open the menu in the top right and choose **Custom repositories**.
 2. Paste this repository's address:
- `https://github.com/Normio/HeatIt-Wifi-Home-Assistant`.
+ `https://github.com/Normio/HeatIt-Wifi-Panel`.
 3. Pick the type **Integration** and add it.
 4. Download **Heatit WiFi Panel** from HACS and restart Home Assistant.
 

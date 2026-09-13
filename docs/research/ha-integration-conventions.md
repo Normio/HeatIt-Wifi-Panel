@@ -1,6 +1,6 @@
 # Home Assistant integration architecture and conventions
 
-Research resolving [issue #2](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/2).
+Research resolving [issue #2](https://github.com/Normio/HeatIt-Wifi-Panel/issues/2).
 Verified against HA Core `dev` (`2026.10.0.dev0`, `requires-python >=3.14.2`) on 2026-09-07.
 
 **Scope.** What a new, well-built HA integration looks like *today*, and which conventions matter
@@ -1285,11 +1285,11 @@ Set `"import_executor": true`.
   "name": "Heatit WiFi Panel",
   "codeowners": ["@Normio"],
   "config_flow": true,
-  "documentation": "https://github.com/Normio/HeatIt-Wifi-Home-Assistant",
+  "documentation": "https://github.com/Normio/HeatIt-Wifi-Panel",
   "import_executor": true,
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues",
+  "issue_tracker": "https://github.com/Normio/HeatIt-Wifi-Panel/issues",
   "requirements": [],
   "version": "0.1.0"
 }
@@ -1466,7 +1466,7 @@ From [hacs.xyz/docs/publish/include](https://www.hacs.xyz/docs/publish/include/)
 - *"Create a new GitHub release (**not just a tag, a full release**) after the actions run
   successfully."* HACS reads the tag name of the latest **release** to set the remote version.
   Publishing tags alone is not enough.
-- Then add `Normio/HeatIt-Wifi-Home-Assistant` **alphabetically** to
+- Then add `Normio/HeatIt-Wifi-Panel` **alphabetically** to
   [`hacs/default/integration`](https://github.com/hacs/default/blob/master/integration).
 - Expectation, verbatim: *"new additions still take months to be reviewed and included."*
 

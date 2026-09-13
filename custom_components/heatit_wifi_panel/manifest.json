@@ -4,11 +4,11 @@
   "codeowners": ["@Normio"],
   "config_flow": true,
   "dhcp": [{ "registered_devices": true }],
-  "documentation": "https://github.com/Normio/HeatIt-Wifi-Home-Assistant",
+  "documentation": "https://github.com/Normio/HeatIt-Wifi-Panel",
   "import_executor": true,
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues",
+  "issue_tracker": "https://github.com/Normio/HeatIt-Wifi-Panel/issues",
   "requirements": [],
-  "version": "0.3.0"
+  "version": "0.4.1"
 }

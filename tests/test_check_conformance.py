@@ -8,7 +8,7 @@ import probe
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REGISTER = REPO_ROOT / "docs" / "conformance" / "checklist.md"
 
-ISSUE = "[#7](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/7)"
+ISSUE = "[#7](https://github.com/Normio/HeatIt-Wifi-Panel/issues/7)"
 FIRMWARE = "1.21"
 FIRMWARES = frozenset({FIRMWARE})
 
