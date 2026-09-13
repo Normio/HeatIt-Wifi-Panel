@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The setup dialog, the options dialog and the log lines use plainer
 wording.
+- The settings reset is documented as settling within about 8 s, not 5 s.
+A 1000 W unit took 5.2 s.
 
 ## [0.3.0] - 2026-09-11
 

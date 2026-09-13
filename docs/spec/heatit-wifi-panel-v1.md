@@ -241,8 +241,8 @@ accepted the same way. The enum is not enforced. **Send `?resetKwh=Reset` anyway
 parameter, matches the documented contract, and is provably ignored. So it is free insurance
 against a firmware that starts enforcing it. `DELETE /api/reset/settings` returns the same uniform
 envelope. It does **not** reboot the panel. It leaves `id` / `name` / `room` / `Network` untouched.
-It applies **staggered over ~5 s**, so the 1.5 s post-write refresh sees a *partial* reset and the
-next poll completes it. On the 600 W unit, the post-reset `loadLimit` stays clamped at `maxLoad`
+It applies **staggered over up to ~8 s** (4.6 s and 5.2 s measured, Q34), so the 1.5 s post-write
+refresh sees a *partial* reset and the next poll completes it. On the 600 W unit, the post-reset `loadLimit` stays clamped at `maxLoad`
 rather than the document's default of 15.
 
 ---
@@ -679,7 +679,7 @@ both the `translation_key` and the `{id}-{key}` unique-id suffix. "On" = `entity
 | sensor | `open_window_time_remaining` | Open window time remaining | `parameters.OWD.activeTime` | duration · s · **no state class** | DIAGNOSTIC | yes | `0` when inactive (observed). Whether it counts down is register Q47 |
 | binary_sensor | `open_window_detected` | Open window detected | `parameters.OWD.activeNow` | **no device class** | — | yes | On/Off, not Open/Closed. It is an inference, not a contact. Icons `mdi:window-open-variant` (on) / `mdi:window-closed-variant` (off) |
 | button | `reset_energy` | Reset energy counter | `DELETE /api/reset/kwh?resetKwh=Reset` | — | CONFIG | **no** | §5.5. Never retried. Icon `mdi:counter` |
-| button | `restore_defaults` | Restore default settings | `DELETE /api/reset/settings` | — | CONFIG | **no** | Keeps network and pairing. Applies **staggered over ~5 s**. So the 1.5 s refresh may see a partial reset, or none of it yet, and a later poll completes it. Icon `mdi:restore` |
+| button | `restore_defaults` | Restore default settings | `DELETE /api/reset/settings` | — | CONFIG | **no** | Keeps network and pairing. Applies **staggered over up to ~8 s**. So the 1.5 s refresh may see a partial reset, or none of it yet, and a later poll completes it. Icon `mdi:restore` |
 
 Counts: 1 climate, 8 numbers, 2 switches, 2 selects, 5 sensors, 1 binary sensor, 2 buttons.
 
@@ -1576,7 +1576,7 @@ probe.py --thermal       → + heater-on sequences                (y/N, TTY requ
 
 Selection is `--check Q13 Q29` or `--group write`. The default run is every `read`-tier check.
 
-- `--thermal` also requires `sys.stdin.isatty()` and a typed confirmation naming the check. So
+- `--thermal` also requires `sys.stdin.isatty()` and the same y/N answer as `--destructive`. So
   **no CI job, cron or background run can ever turn a heater on in someone's bedroom**. A thermal
   check also refuses to raise a setpoint more than 2 °C above the current room temperature. It caps
   how long it may leave the relay closed.
@@ -1713,6 +1713,18 @@ rather than a surprise.
 
 Corrections to this document after v1 was frozen. Each entry names the register row or issue that
 forced it, and the PR that carried it.
+
+**2026-09-13 — Q34's settle is "~8 s", not "~5 s"; `--thermal` needs no typed phrase** ([#89](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/89), PR pending).
+§5.2 and §10's button row said a settings reset "applies staggered over ~5 s", and the probe held
+Q34 to a strict 5.0 s. #74 called that a knife edge after the 600 W unit settled at exactly 5.0 s
+over 12 parameters. On the first full run of every tier on both units the 1000 W unit settled at
+**5.2 s** over the same 12, and the row read FAIL. Nothing in the integration waits 5 s for a
+reset; §10 already sends the reader to a later poll. So the claim and the bound now say "~8 s",
+which the same two measurements (4.6 s and 5.2 s) sit inside with room, and Q34 stays
+`verified fw 1.21` on #89's run. In the same pass §12.2 drops the typed phrase `--thermal` asked
+for on top of the flag. A stray character in it cost Q13 its verdict on the 1000 W unit while the
+sequence it names ran for Q20 anyway. The flag is the consent; one y/N, shared with
+`--destructive`, is the last look at which panel it lands on, and a no drops both tiers.
 
 **2026-09-12 — §3.4 had `config_entry=` both ignored and wired; the register's summary line is CI-checked** ([#79](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/79), [PR #83](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/pull/83)).
 §3.4 said the coordinator's `config_entry=` argument "is ignored for custom integrations" and, in
