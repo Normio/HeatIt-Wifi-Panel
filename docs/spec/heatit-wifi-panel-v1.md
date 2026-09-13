@@ -1714,7 +1714,7 @@ rather than a surprise.
 Corrections to this document after v1 was frozen. Each entry names the register row or issue that
 forced it, and the PR that carried it.
 
-**2026-09-13 — Q34's settle is "~8 s", not "~5 s"; `--thermal` needs no typed phrase** ([#89](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/89), PR pending).
+**2026-09-13 — Q34's settle is "~8 s", not "~5 s"; `--thermal` needs no typed phrase** ([#89](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/issues/89), [PR #90](https://github.com/Normio/HeatIt-Wifi-Home-Assistant/pull/90)).
 §5.2 and §10's button row said a settings reset "applies staggered over ~5 s", and the probe held
 Q34 to a strict 5.0 s. #74 called that a knife edge after the 600 W unit settled at exactly 5.0 s
 over 12 parameters. On the first full run of every tier on both units the 1000 W unit settled at
