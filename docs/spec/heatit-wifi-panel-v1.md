@@ -1629,7 +1629,8 @@ appendix is the contributor-facing half of the document.
 
 1. an id is duplicated or malformed, a row has the wrong column count, or `vs spec` / `tier` /
    `status` is outside its vocabulary;
-2. a `verified` or `contradicted` row names a firmware that is not in `VERIFIED_FIRMWARES`;
+2. a `verified` or `contradicted` row names a firmware that is not in `VERIFIED_FIRMWARES`, or a
+   unit that is not in the script's `KNOWN_UNITS`, or a unit twice;
 3. a non-`open` row has no evidence, or an evidence entry does not resolve. An entry resolves when
    it is a repo path that exists, an issue or PR link, or a `P-n` defined in the appendix;
 4. a dependents cell carries no resolvable reference of those same kinds. Prose may sit alongside
@@ -1639,8 +1640,8 @@ appendix is the contributor-facing half of the document.
 5. an `open` `manual` row cites no procedure, or an appendix procedure is cited by no row;
 6. **the set of non-`manual` ids in the register is not exactly the set registered in `probe.py`**.
    That is the one place the two can silently diverge;
-7. the summary line under the table is missing, or any of its three figures (verified at the named
-   firmware, `open`, `disagrees`) is not what the table counts. The line stays hand-written prose.
+7. the summary line under the table is missing, or any of its figures (verified at the named
+   firmware, how many of those on each unit, `open`, `disagrees`) is not what the table counts. The line stays hand-written prose.
    Its one bold sentence is the form the check reads, and the script's docstring holds that form.
 
 The escape hatch is the vocabulary itself: `manual` tier and `open` status ask for nothing.
@@ -1651,10 +1652,10 @@ Four contradictions have already happened. Each surfaced *inside a live decision
 process was needed. That mechanism ends when this document is assembled. The next contradiction
 lands against a frozen spec with shipped code on it.
 
-1. The row flips to `contradicted fw <v>`, citing the run.
+1. The row flips to `contradicted fw <v> on <unit>`, citing the run.
 2. An issue labelled `conformance` opens, naming the row. Its **dependents** cell is the triage.
 3. **One PR** carries the spec amendment (§15), the code change, the new fixture and the row
-   restored to `verified fw <v>`. It closes the issue.
+   restored to `verified fw <v> on <units>`. It closes the issue.
 
 **The spec gains an amendment rather than being rewritten.** So the v1 document still reads as
 what v1 claimed, with its corrections appended and dated.
@@ -1713,6 +1714,17 @@ rather than a surprise.
 
 Corrections to this document after v1 was frozen. Each entry names the register row or issue that
 forced it, and the PR that carried it.
+
+**2026-09-13 — a status names the units a row was shown on** ([#89](https://github.com/Normio/HeatIt-Wifi-Panel/issues/89), [PR #90](https://github.com/Normio/HeatIt-Wifi-Panel/pull/90)).
+§12.1 and §12.4 read a status as `verified fw <v>`, one firmware and nothing about which panel.
+With two units run through every tier, "verified" no longer said on what. A status is now
+`verified fw <v> on <units>`, the units named by wattage and comma-separated, and
+`check_conformance.py` holds each one to its `KNOWN_UNITS` and holds the summary line's per-unit
+counts to the table (conditions 2 and 7). The 46 automated rows are on both units. Q28's browse in
+#32 was of the 600 W unit, and Q50 needs a `maxLoad` other than 6, so it is 1000 W only. Q13 and
+Q34 are set on the 1000 W unit from #89's run: the sequence that served Q20 there closed the relay
+3 s after entering Eco, which is what Q13 asserts, and the 5.2 s settle sits inside the ~8 s bound
+the entry below adopts.
 
 **2026-09-13 — Q34's settle is "~8 s", not "~5 s"; `--thermal` needs no typed phrase** ([#89](https://github.com/Normio/HeatIt-Wifi-Panel/issues/89), [PR #90](https://github.com/Normio/HeatIt-Wifi-Panel/pull/90)).
 §5.2 and §10's button row said a settings reset "applies staggered over ~5 s", and the probe held

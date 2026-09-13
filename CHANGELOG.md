@@ -13,10 +13,8 @@ The repository moved. The links on the integration's page follow it.
 
 ### Changed
 
-- The documentation and issue links on the integration's page now point at
+- The documentation and issue links on the integration's page now point at  
 `Normio/HeatIt-Wifi-Panel`
-- The settings reset is documented as settling within about 8 s, not 5 s.
-A 1000 W unit took 5.2 s.
 
 ## [0.4.0] - 2026-09-12
 
