@@ -18,7 +18,7 @@ model or firmware may give a different result, and this register is where that g
 
 | column | meaning |
 |---|---|
-| **id** | Never changes. `Q1`–`Q38` come from the research document. `Q39`+ were raised by decision tickets. A retired id is never reused: `Q16`, `Q49`, `Q51` and `Q52` were retired on 2026-09-14, because each needed a firmware other than 1.21. |
+| **id** | Never changes. `Q1`–`Q38` come from the research document. `Q39`+ were raised by decision tickets. A retired id is never reused. `Q16`, `Q49`, `Q51` and `Q52` were retired on 2026-09-14 because each needed a firmware other than 1.21, and `Q48` because the panel offers no way to pair an external sensor. |
 | **claim** | States *what the integration depends on*, in a way a real panel can prove false, so the status is a clear yes or no. Never states what the spec says. |
 | **vs spec** | `agrees` / `disagrees` / `silent`. How the vendor's OpenAPI document relates to the claim. A `disagrees` row is the most valuable kind. It records a place where a future firmware could quietly go back to the documented behaviour. |
 | **tier** | The probe tier, which is the hazard class. It matches the probe script's flags: `read`, `write`, `destructive`, `thermal`, `manual`. `manual` means no script can run it. |
@@ -122,7 +122,6 @@ v1 claimed, with its corrections added at the end and dated.
 | Q45 | The energy counter reads `0.00` within 5 s of a reset acknowledgement | silent | destructive | verified fw 1.21 on 600 W, 1000 W | [#18](https://github.com/Normio/HeatIt-Wifi-Panel/issues/18) | [#18](https://github.com/Normio/HeatIt-Wifi-Panel/issues/18) reset-verification delay, an upper bound rather than a measurement |
 | Q46 | The energy counter advances in steps of no more than 0.05 kWh at any wattage | silent | manual | open | [P-5](#p-5), [#89](https://github.com/Normio/HeatIt-Wifi-Panel/issues/89) | [#18](https://github.com/Normio/HeatIt-Wifi-Panel/issues/18) one lost step per reset |
 | Q47 | `OWD.activeTime` counts down in seconds while `activeNow` is true | agrees | manual | open | [P-4](#p-4) | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) open-window duration sensor |
-| Q48 | `externalSensorFallback` appears in status once an external sensor is paired | silent | manual | open | [P-6](#p-6) | [#12](https://github.com/Normio/HeatIt-Wifi-Panel/issues/12) observed parameters only |
 | Q50 | A settings reset sets `loadLimit` to the unit's own `maxLoad` on a **second model**, meaning any unit whose `maxLoad` is not 6 (a unit above 1500 W would also separate `maxLoad` from `min(maxLoad, 15)`, which neither probed unit can) | disagrees | manual | verified fw 1.21 on 1000 W | [#74](https://github.com/Normio/HeatIt-Wifi-Panel/issues/74), [P-8](#p-8) | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) load limit bounds. Q53 is shown on the 600 W unit, and [#74](https://github.com/Normio/HeatIt-Wifi-Panel/issues/74) says why the 1000 W run did not show it |
 | Q53 | A settings reset sets every parameter to the vendor document's stated default **except `loadLimit`, which it sets to the unit's own `maxLoad`** | disagrees | destructive | verified fw 1.21 on 600 W, 1000 W | [#74](https://github.com/Normio/HeatIt-Wifi-Panel/issues/74), [#73](https://github.com/Normio/HeatIt-Wifi-Panel/issues/73) | `docs/api/heatit-wifi-panel-openapi.yaml`, the only claim we have about post-reset state, and wrong in this one place. Q50 is the same fact from the other side, on a unit whose `maxLoad` is not 6 |
 | Q54 | `/api/status` is computed fresh for each request, not served from a cache | silent | read | verified fw 1.21 on 600 W, 1000 W | [#13](https://github.com/Normio/HeatIt-Wifi-Panel/issues/13) | [#12](https://github.com/Normio/HeatIt-Wifi-Panel/issues/12) fixture diff carries live-value noise |
@@ -131,7 +130,7 @@ v1 claimed, with its corrections added at the end and dated.
 | Q57 | A reset returns `{"status":"Success"}` with the `status` key, the same as parameter writes, not the documented `reset` key | disagrees | destructive | verified fw 1.21 on 600 W, 1000 W | [#7](https://github.com/Normio/HeatIt-Wifi-Panel/issues/7) | [#7](https://github.com/Normio/HeatIt-Wifi-Panel/issues/7) client response parser |
 | Q58 | `sensorMode=true` on a panel with no external sensor paired returns a success echo but is not applied: a silent undo | silent | write | verified fw 1.21 on 600 W, 1000 W | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) | [#14](https://github.com/Normio/HeatIt-Wifi-Panel/issues/14) silent-undo warning, [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) switch entity |
 
-**48 verified at firmware 1.21 (47 on the 600 W unit, 47 on the 1000 W unit), 6 open, 12 `disagrees`.** Nothing is `contradicted`. The places
+**48 verified at firmware 1.21 (47 on the 600 W unit, 47 on the 1000 W unit), 5 open, 12 `disagrees`.** Nothing is `contradicted`. The places
 where the vendor document is simply wrong are recorded as `disagrees`, which is a different thing.
 Those claims were never true. They did not stop being true. CI holds the three figures in the bold
 sentence to the table, the two unit counts included.
@@ -218,21 +217,6 @@ Needs a panel that is not 600 W.
 
 Report: the step size between consecutive distinct values, and the time between them. This tells us
 whether the counter publishes by energy or by time. One 600 W unit cannot tell those apart.
-
-<a id="p-6"></a>
-### P-6 — a paired external temperature sensor (Q48)
-
-Needs an external sensor, which nobody on this project has.
-
-1. `GET /api/status`. Confirm `externalSensorFallback` is absent from `parameters`.
-2. Pair the external sensor and set `sensorMode=true`.
-3. `GET /api/status`. Record the whole `parameters` object.
-4. Disconnect or block the sensor and record `roomTemperature`. Does it fall back, hold the last
-   value, return `0.0`, or drop the field?
-
-Report: the full raw status body at each step. On this firmware, `sensorMode=true` on an **unpaired**
-unit is silently ignored behind a success echo. So step 3 is the only thing that can tell "absent"
-from "conditional".
 
 <a id="p-8"></a>
 ### P-8 — settings reset on a second model (Q50)
