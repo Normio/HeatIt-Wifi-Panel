@@ -1724,8 +1724,10 @@ Four need a firmware other than 1.21. Heatit has shipped none and may never ship
 - Q51 asks whether the setpoint and calibration grids hold on another firmware.
 - Q52 asks whether the device `id` survives a factory reset **and** a firmware update.
 
-Q48 needs an external sensor paired. Neither Heatit's manuals nor the MyHeatit app offers a way to
-pair one.
+Q48 needs an external sensor paired. Neither the MyHeatit app nor Heatit's
+[installer's manual](https://media.heatit.com/5140) (Ver-D, 01.09.2025) offers a way to pair one.
+The manual names only the panel's internal sensors, and its configuration table lists neither
+`sensorMode` nor low temperature protection.
 
 The rows and their procedures, P-1, P-6, P-7 and P-9, leave the register. Their ids are never
 reused. §12's "P-1…P-9" now runs P-2…P-8 without P-6 and P-7. Q19's claim drops its low
