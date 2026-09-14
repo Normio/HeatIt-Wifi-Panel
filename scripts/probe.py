@@ -117,7 +117,9 @@ REFLECT_POLL = 0.05
 #: Q45's bound: the counter reads zero within this of the reset acknowledgement.
 RESET_ZERO_BOUND = 5.0
 RESET_POLL = 0.25
-SETTINGS_SETTLE_BOUND = 5.0
+#: Q34's bound: a settings reset has stopped changing parameters within this.
+#: Measured 4.6 s and 5.2 s over 12 parameters at fw 1.21; 5.0 was a coin flip.
+SETTINGS_SETTLE_BOUND = 8.0
 SETTINGS_WATCH = 10.0
 SETTINGS_POLL = 0.5
 #: Q43's bound: a status read completes within this.
@@ -896,7 +898,6 @@ class Run:
     measurements: dict[str, str] = field(default_factory=dict)
     #: Outcomes shared by the rows that one reset or one heater-on sequence serves.
     shared: dict[str, Any] = field(default_factory=dict)
-    confirm_thermal: Callable[[str], bool] = lambda _row_id: False
     sleep: Callable[[float], None] = time.sleep
 
     def measure(self, key: str, value: str) -> None:
@@ -1911,14 +1912,11 @@ def latest(timeline: list[RelaySample]) -> RelaySample:
     return timeline[-1] if timeline else (0.0, "", 0)
 
 
-def heat_sequence(run: Run, row_id: str) -> HeatOutcome:
+def heat_sequence(run: Run) -> HeatOutcome:
     """Close the relay once per run, briefly, in Eco mode and record the edges."""
     if "heat" in run.shared:
         outcome: HeatOutcome = run.shared["heat"]
         return outcome
-    if not run.confirm_thermal(row_id):
-        msg = "thermal confirmation not given"
-        raise Inconclusive(msg)
     status = run.panel.status()
     if status.doc["state"] != "Idle":
         msg = f"the relay is already {status.doc['state']!r}; nothing to switch on"
@@ -1989,7 +1987,7 @@ def fmt_at(moment: float | None) -> str:
 @check("Q13", tier=THERMAL)
 def eco_regulates_to_eco_setpoint(run: Run) -> str | None:
     """In Eco, raising ``ecoSetpoint`` above the room closes the relay."""
-    outcome = heat_sequence(run, "Q13")
+    outcome = heat_sequence(run)
     expect(outcome.heating_at is not None, "the relay never closed")
     return f"relay closed at {fmt_at(outcome.heating_at)}"
 
@@ -1997,7 +1995,7 @@ def eco_regulates_to_eco_setpoint(run: Run) -> str | None:
 @check("Q20", tier=THERMAL)
 def power_trails_the_relay(run: Run) -> str | None:
     """``currentPower`` lags the relay state at both edges."""
-    outcome = heat_sequence(run, "Q20")
+    outcome = heat_sequence(run)
     if outcome.heating_at is None:
         msg = "the relay never closed"
         raise Inconclusive(msg)
@@ -2079,24 +2077,6 @@ def ask_yes_no(question: str) -> bool:
     return answer.strip().lower() == "y"
 
 
-def make_thermal_confirmer(host: str) -> Callable[[str], bool]:
-    """Build a confirmer that needs a TTY and the check's id typed back."""
-
-    def confirm(row_id: str) -> bool:
-        if not sys.stdin.isatty():
-            say(f"{row_id}: --thermal needs an interactive terminal; skipping")
-            return False
-        phrase = f"heat {row_id}"
-        answer = input(
-            f"{row_id} will close the relay on the panel at {host} for up to "
-            f"{THERMAL_MAX_RELAY_SECONDS} s (one sequence serves Q13 and Q20). "
-            f"Type '{phrase}' to continue: "
-        )
-        return answer.strip() == phrase
-
-    return confirm
-
-
 @dataclass
 class Report:
     """What a run prints once the checks are done."""
@@ -2134,8 +2114,10 @@ class Report:
         yield ""
         if self.fixtures:
             yield from (f"- `{path.relative_to(REPO_ROOT)}`" for path in self.fixtures)
+        elif self.kept:
+            yield "- none new (every capture already exists in the tree)"
         else:
-            yield "- none saved (fixtures are written only with `--writes`)"
+            yield "- none saved (fixtures are written from the write tier up)"
         if self.kept:
             yield ""
             yield "Left as committed, not overwritten:"
@@ -2183,7 +2165,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--thermal",
         action="store_true",
-        help="+ heater-on sequences (typed confirmation, TTY)",
+        help="+ heater-on sequences (y/N, TTY)",
     )
     parser.add_argument("--check", nargs="+", metavar="ID", help="only these ids")
     parser.add_argument("--group", choices=TIERS, help="only this tier's checks")
@@ -2254,6 +2236,7 @@ def run_checks(
     register: dict[str, Row],
     run: Run,
     enabled: frozenset[str],
+    results: list[Result] | None = None,
 ) -> list[Result]:
     """Run every selected check its tier allows, restoring after each one.
 
@@ -2261,8 +2244,13 @@ def run_checks(
     preconditions. It also keeps a settings reset's defaults (comfort 21 °C in
     Heating mode) from standing for the rest of the run. A revert the status
     does not confirm stops the run: the exit hook then prints the banner.
+
+    Verdicts land in ``results`` as they are reached, so a caller that passes
+    its own list keeps every check that ran when the run stops early. A run
+    on a weak WiFi link once lost twelve passes that way.
     """
-    results: list[Result] = []
+    if results is None:
+        results = []
     for entry in checks:
         claim = register[entry.row_id].claim if entry.row_id in register else ""
         if entry.tier not in enabled:
@@ -2272,8 +2260,14 @@ def run_checks(
         verdict, detail = run_one(entry, run)
         say(f"  {verdict}{': ' + detail if detail else ''}")
         results.append(Result(entry.row_id, entry.tier, verdict, claim, detail))
-        if run.ledger.pending and run.ledger.restore():
-            msg = f"{entry.row_id}: restore not confirmed by the status"
+        failures = run.ledger.restore() if run.ledger.pending else []
+        if failures:
+            unconfirmed = "; ".join(
+                f"{failure.parameter} original {failure.original}, "
+                f"now {failure.observed}"
+                for failure in failures
+            )
+            msg = f"{entry.row_id}: restore not confirmed by the status: {unconfirmed}"
             raise RevertFailedError(msg)
     return results
 
@@ -2281,19 +2275,35 @@ def run_checks(
 def confirm_tiers(
     enabled: frozenset[str], checks: list[Check], host: str
 ) -> frozenset[str]:
-    """Ask y/N for the destructive tier when a destructive check is selected."""
-    if DESTRUCTIVE in enabled and any(entry.tier == DESTRUCTIVE for entry in checks):
-        question = (
-            f"Run destructive checks on the panel at {host}? The kWh counter is "
-            f"zeroed for good. Every writable parameter is first moved off its "
-            f"documented default, so the reset can be seen to undo it. A "
-            f"settings reset then puts the panel at its defaults (comfort 21.0 °C, "
-            f"Heating mode) for about 15 s until the restore lands. The heater "
-            f"runs for that long if the room is colder. Every parameter is "
-            f"restored and verified from a fresh read."
+    """Ask one y/N for the destructive and thermal tiers, whichever has a check.
+
+    The flag is the consent for what each tier does; the answer is the last
+    look at which panel it lands on. A no drops both tiers, because a no to
+    a zeroed counter is a no to a closed relay too. Q13 and Q20 used to ask
+    once more each for a typed phrase, and a stray character in it cost a row.
+    """
+    selected = {entry.tier for entry in checks}
+    asked = [tier for tier in (DESTRUCTIVE, THERMAL) if tier in enabled & selected]
+    if not asked:
+        return enabled
+    parts = [f"Run the checks that change the panel at {host}?"]
+    if DESTRUCTIVE in asked:
+        parts.append(
+            "The kWh counter is zeroed for good. Every writable parameter is "
+            "first moved off its documented default, so the reset can be seen "
+            "to undo it. A settings reset then puts the panel at its defaults "
+            "(comfort 21.0 °C, Heating mode) for about 15 s until the restore "
+            "lands. The heater runs for that long if the room is colder."
         )
-        if not ask_yes_no(question):
-            enabled = enabled - {DESTRUCTIVE}
+    if THERMAL in asked:
+        parts.append(
+            f"The relay is closed once, in Eco at no more than "
+            f"{THERMAL_MAX_ABOVE_ROOM:.0f} °C above the room, for up to "
+            f"{THERMAL_MAX_RELAY_SECONDS} s (Q13 and Q20)."
+        )
+    parts.append("Every parameter is restored and verified from a fresh read.")
+    if not ask_yes_no(" ".join(parts)):
+        enabled = enabled - {DESTRUCTIVE, THERMAL}
     return enabled
 
 
@@ -2343,17 +2353,12 @@ def main_probe(args: argparse.Namespace) -> int:
             FIXTURE_ROOT / f"fw-{firmware}", secrets=secrets_of(status)
         )
     ledger = Ledger(panel)
-    run = Run(
-        panel=panel,
-        ledger=ledger,
-        fixtures=fixtures,
-        confirm_thermal=make_thermal_confirmer(host),
-    )
+    run = Run(panel=panel, ledger=ledger, fixtures=fixtures)
     install_signal_handlers()
     results: list[Result] = []
     interrupted = False
     try:
-        results = run_checks(checks, register, run, enabled)
+        run_checks(checks, register, run, enabled, results)
     except (KeyboardInterrupt, Terminated) as error:
         interrupted = True
         say(f"\ninterrupted: {error or 'SIGINT'}")

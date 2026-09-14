@@ -23,10 +23,17 @@ APPENDIX = (
 )
 
 
-def summary(verified: int, open_: int, disagrees: int) -> str:
-    """Write a summary line in the one form the check reads."""
+def summary(
+    verified: int, open_: int, disagrees: int, per_unit: str | None = None
+) -> str:
+    """Write a summary line in the one form the check reads.
+
+    ``per_unit`` defaults to every verified row being on the 600 W unit.
+    """
+    if per_unit is None:
+        per_unit = f"{verified} on the 600 W unit"
     return (
-        f"\n**{verified} verified at firmware {FIRMWARE}, {open_} open, "
+        f"\n**{verified} verified at firmware {FIRMWARE} ({per_unit}), {open_} open, "
         f"{disagrees} `disagrees`.** Nothing is `contradicted`.\n"
     )
 
@@ -43,10 +50,19 @@ def counted_summary(rows: str) -> str:
         for cells in probe.parse_register_cells(HEADER + rows)
         if len(cells) == len(probe.REGISTER_COLUMNS)
     ]
+    verified = [
+        row for row in parsed if row.status.startswith(f"verified fw {FIRMWARE} on ")
+    ]
+    per_unit = ", ".join(
+        f"{sum(unit in check_conformance.status_units(row.status) for row in verified)}"
+        f" on the {unit} unit"
+        for unit in sorted(check_conformance.KNOWN_UNITS)
+    )
     return summary(
-        sum(row.status == f"verified fw {FIRMWARE}" for row in parsed),
+        len(verified),
         sum(row.status == "open" for row in parsed),
         sum(row.vs_spec == "disagrees" for row in parsed),
+        per_unit,
     )
 
 
@@ -73,7 +89,8 @@ def problems(text: str, *, probe_ids: frozenset[str]) -> list[str]:
 
 
 GOOD_ROWS = (
-    f"| Q1 | A claim | agrees | write | verified fw 1.21 | {ISSUE} | {ISSUE} prose |\n"
+    f"| Q1 | A claim | agrees | write | verified fw 1.21 on 600 W | {ISSUE} | "
+    f"{ISSUE} prose |\n"
     "| Q2 | Another | silent | manual | open | [P-1](#p-1) | "
     "`docs/adr/0003-device-id-as-unique-id.md` |\n"
 )
@@ -93,12 +110,14 @@ def test_the_real_register_passes_against_the_real_probe() -> None:
 def test_condition_1_duplicate_or_malformed_ids_and_vocabulary() -> None:
     """A duplicated id, a bad id, a bad column count, a word outside the vocabulary."""
     rows = (
-        f"| Q1 | A | agrees | write | verified fw 1.21 | {ISSUE} | {ISSUE} |\n"
-        f"| Q1 | B | agrees | write | verified fw 1.21 | {ISSUE} | {ISSUE} |\n"
-        f"| Q-3 | C | agrees | write | verified fw 1.21 | {ISSUE} | {ISSUE} |\n"
-        f"| Q4 | D | agrees | write | verified fw 1.21 | {ISSUE} |\n"
-        f"| Q5 | E | maybe | write | verified fw 1.21 | {ISSUE} | {ISSUE} |\n"
-        f"| Q6 | F | agrees | scripted | verified fw 1.21 | {ISSUE} | {ISSUE} |\n"
+        f"| Q1 | A | agrees | write | verified fw 1.21 on 600 W | {ISSUE} | {ISSUE} |\n"
+        f"| Q1 | B | agrees | write | verified fw 1.21 on 600 W | {ISSUE} | {ISSUE} |\n"
+        f"| Q-3 | C | agrees | write | verified fw 1.21 on 600 W | {ISSUE} | "
+        f"{ISSUE} |\n"
+        f"| Q4 | D | agrees | write | verified fw 1.21 on 600 W | {ISSUE} |\n"
+        f"| Q5 | E | maybe | write | verified fw 1.21 on 600 W | {ISSUE} | {ISSUE} |\n"
+        f"| Q6 | F | agrees | scripted | verified fw 1.21 on 600 W | {ISSUE} | "
+        f"{ISSUE} |\n"
         f"| Q7 | G | agrees | write | probably | {ISSUE} | {ISSUE} |\n"
     )
     found = problems(register(rows), probe_ids=frozenset({"Q1", "Q5", "Q6", "Q7"}))
@@ -113,8 +132,9 @@ def test_condition_1_duplicate_or_malformed_ids_and_vocabulary() -> None:
 def test_condition_2_an_unknown_firmware() -> None:
     """A verified or contradicted row must cite a firmware in the verified set."""
     rows = (
-        f"| Q1 | A | agrees | write | verified fw 1.30 | {ISSUE} | {ISSUE} |\n"
-        f"| Q2 | B | agrees | write | contradicted fw 9.9 | {ISSUE} | {ISSUE} |\n"
+        f"| Q1 | A | agrees | write | verified fw 1.30 on 600 W | {ISSUE} | {ISSUE} |\n"
+        f"| Q2 | B | agrees | write | contradicted fw 9.9 on 600 W | {ISSUE} | "
+        f"{ISSUE} |\n"
     )
     found = problems(register(rows), probe_ids=frozenset({"Q1", "Q2"}))
     assert any("Q1" in p and "1.30" in p for p in found)
@@ -124,13 +144,13 @@ def test_condition_2_an_unknown_firmware() -> None:
 def test_condition_3_missing_or_unresolvable_evidence() -> None:
     """A non-open row needs evidence, and every evidence entry must resolve."""
     rows = (
-        "| Q1 | A | agrees | write | verified fw 1.21 | — | "
+        "| Q1 | A | agrees | write | verified fw 1.21 on 600 W | — | "
         f"{ISSUE} |\n"
-        "| Q2 | B | agrees | write | verified fw 1.21 | `docs/nowhere.md` | "
+        "| Q2 | B | agrees | write | verified fw 1.21 on 600 W | `docs/nowhere.md` | "
         f"{ISSUE} |\n"
-        "| Q3 | C | agrees | write | verified fw 1.21 | [P-9](#p-9) | "
+        "| Q3 | C | agrees | write | verified fw 1.21 on 600 W | [P-9](#p-9) | "
         f"{ISSUE} |\n"
-        f"| Q4 | D | agrees | write | verified fw 1.21 | {ISSUE}, "
+        f"| Q4 | D | agrees | write | verified fw 1.21 on 600 W | {ISSUE}, "
         f"[x](https://example.com) | {ISSUE} |\n"
     )
     found = problems(register(rows), probe_ids=frozenset({"Q1", "Q2", "Q3", "Q4"}))
@@ -143,9 +163,9 @@ def test_condition_3_missing_or_unresolvable_evidence() -> None:
 def test_condition_4_dependents_without_a_resolvable_reference() -> None:
     """Prose alone does not count as a dependents list."""
     rows = (
-        f"| Q1 | A | agrees | write | verified fw 1.21 | {ISSUE} | "
+        f"| Q1 | A | agrees | write | verified fw 1.21 on 600 W | {ISSUE} | "
         "the climate entity, probably |\n"
-        f"| Q2 | B | agrees | write | verified fw 1.21 | {ISSUE} | "
+        f"| Q2 | B | agrees | write | verified fw 1.21 on 600 W | {ISSUE} | "
         "`docs/adr/0003-device-id-as-unique-id.md` and prose |\n"
     )
     found = problems(register(rows), probe_ids=frozenset({"Q1", "Q2"}))
@@ -175,17 +195,19 @@ def test_condition_6_the_register_and_the_probe_disagree() -> None:
 def test_condition_7_the_summary_line_disagrees_with_the_table() -> None:
     """Each of the three figures is held to the table, and the message names both."""
     rows = (
-        f"| Q1 | A | agrees | write | verified fw 1.21 | {ISSUE} | {ISSUE} |\n"
-        f"| Q2 | B | disagrees | write | verified fw 1.21 | {ISSUE} | {ISSUE} |\n"
+        f"| Q1 | A | agrees | write | verified fw 1.21 on 600 W | {ISSUE} | {ISSUE} |\n"
+        f"| Q2 | B | disagrees | write | verified fw 1.21 on 600 W | {ISSUE} | "
+        f"{ISSUE} |\n"
         "| Q3 | C | silent | manual | open | [P-1](#p-1) | "
         "`docs/adr/0003-device-id-as-unique-id.md` |\n"
     )
     ids = frozenset({"Q1", "Q2"})
     assert problems(register(rows, summary_line=summary(2, 1, 1)), probe_ids=ids) == []
+    on_600 = "2 on the 600 W unit"
     for line, message in (
-        (summary(3, 1, 1), "says 3 verified, the table has 2"),
-        (summary(2, 2, 1), "says 2 open, the table has 1"),
-        (summary(2, 1, 0), "says 0 disagrees, the table has 1"),
+        (summary(3, 1, 1, on_600), "says 3 verified, the table has 2"),
+        (summary(2, 2, 1, on_600), "says 2 open, the table has 1"),
+        (summary(2, 1, 0, on_600), "says 0 disagrees, the table has 1"),
     ):
         found = problems(register(rows, summary_line=line), probe_ids=ids)
         assert len(found) == 1, found
@@ -201,3 +223,54 @@ def test_condition_7_a_missing_summary_line_is_a_problem() -> None:
 def test_a_missing_register_table_is_a_problem() -> None:
     """A document with no register table is not a register."""
     assert problems("# nothing here\n", probe_ids=frozenset())
+
+
+def test_condition_2_an_unknown_unit_or_none_at_all() -> None:
+    """A verified row names the units it was shown on, each one known, each once."""
+    rows = (
+        f"| Q1 | A | agrees | write | verified fw 1.21 on 750 W | {ISSUE} | {ISSUE} |\n"
+        f"| Q2 | B | agrees | write | verified fw 1.21 | {ISSUE} | {ISSUE} |\n"
+        f"| Q3 | C | agrees | write | verified fw 1.21 on 600 W, 600 W | {ISSUE} | "
+        f"{ISSUE} |\n"
+        f"| Q4 | D | agrees | write | verified fw 1.21 on 600 W, 1000 W | {ISSUE} | "
+        f"{ISSUE} |\n"
+    )
+    line = summary(3, 0, 0, "2 on the 600 W unit, 1 on the 1000 W unit")
+    found = problems(
+        register(rows, summary_line=line, appendix=""),
+        probe_ids=frozenset({"Q1", "Q2", "Q3", "Q4"}),
+    )
+    assert any("Q1" in p and "750 W" in p and "KNOWN_UNITS" in p for p in found)
+    assert any("Q2" in p and "on <units>" in p for p in found)
+    assert any("Q3" in p and "twice" in p for p in found)
+    assert not any(p.startswith("Q4") for p in found)
+
+
+def test_condition_7_the_per_unit_figures_disagree_with_the_table() -> None:
+    """Each unit's verified count is held to the table, and no unit is left out."""
+    rows = (
+        f"| Q1 | A | agrees | write | verified fw 1.21 on 600 W, 1000 W | {ISSUE} | "
+        f"{ISSUE} |\n"
+        f"| Q2 | B | agrees | write | verified fw 1.21 on 600 W | {ISSUE} | {ISSUE} |\n"
+    )
+    ids = frozenset({"Q1", "Q2"})
+    good = summary(2, 0, 0, "2 on the 600 W unit, 1 on the 1000 W unit")
+    assert problems(register(rows, summary_line=good, appendix=""), probe_ids=ids) == []
+    for line, expected in (
+        (
+            summary(2, 0, 0, "1 on the 600 W unit, 1 on the 1000 W unit"),
+            "says 1 verified on the 600 W unit, the table has 2",
+        ),
+        (
+            summary(2, 0, 0, "2 on the 600 W unit"),
+            "does not say how many are verified on the 1000 W unit",
+        ),
+        (
+            summary(
+                2, 0, 0, "2 on the 600 W unit, 1 on the 1000 W unit, 1 on the 2 W unit"
+            ),
+            "names the 2 W unit, which is not in KNOWN_UNITS",
+        ),
+    ):
+        found = problems(register(rows, summary_line=line, appendix=""), probe_ids=ids)
+        assert any(expected in p for p in found), (line, found)

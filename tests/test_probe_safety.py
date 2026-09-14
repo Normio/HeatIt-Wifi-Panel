@@ -308,9 +308,12 @@ def test_a_revert_the_status_denies_stops_the_run(tmp_path: Path) -> None:
         probe.Check("Q58", probe.WRITE, lying),
         probe.Check("Q6", probe.WRITE, lying),
     ]
-    with pytest.raises(probe.RevertFailedError):
-        probe.run_checks(checks, {}, run, frozenset({probe.WRITE}))
+    results: list[probe.Result] = []
+    with pytest.raises(probe.RevertFailedError, match="sensorMode original"):
+        probe.run_checks(checks, {}, run, frozenset({probe.WRITE}), results)
     assert run.ledger.pending == ("sensorMode",)
+    # The verdict already reached survives the stop; the report prints it.
+    assert [(result.row_id, result.verdict) for result in results] == [("Q58", "PASS")]
 
 
 def test_the_reflect_poll_compares_like_the_panel_stores(
@@ -363,3 +366,36 @@ def test_enabled_tiers_ascend_with_the_flags() -> None:
         {"read", "write", "destructive"}
     )
     assert probe.enabled_tiers(thermal=True) == frozenset(probe.TIERS)
+
+
+def test_one_no_drops_both_tiers_that_change_the_panel(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The flag is the consent, the y/N the last look at the host; no means neither."""
+    checks = [
+        probe.Check("Q7", probe.DESTRUCTIVE, lambda _run: None),
+        probe.Check("Q13", probe.THERMAL, lambda _run: None),
+    ]
+    every = frozenset(probe.TIERS)
+    asked: list[str] = []
+
+    def answer(reply: str) -> None:
+        def fake_input(prompt: str) -> str:
+            asked.append(prompt)
+            return reply
+
+        monkeypatch.setattr("builtins.input", fake_input)
+
+    answer("n")
+    assert probe.confirm_tiers(every, checks, "10.0.0.2") == frozenset(
+        {probe.READ, probe.WRITE}
+    )
+    assert "relay is closed once" in asked[-1]
+    assert "kWh counter is zeroed" in asked[-1]
+    answer("y")
+    assert probe.confirm_tiers(every, checks, "10.0.0.2") == every
+    # Only read and write checks selected: nothing to ask.
+    quiet = [probe.Check("Q10", probe.READ, lambda _run: None)]
+    asked.clear()
+    assert probe.confirm_tiers(every, quiet, "10.0.0.2") == every
+    assert asked == []
