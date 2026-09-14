@@ -18,7 +18,7 @@ model or firmware may give a different result, and this register is where that g
 
 | column | meaning |
 |---|---|
-| **id** | Never changes. `Q1`–`Q38` come from the research document. `Q39`+ were raised by decision tickets. |
+| **id** | Never changes. `Q1`–`Q38` come from the research document. `Q39`+ were raised by decision tickets. A retired id is never reused: `Q16`, `Q49`, `Q51` and `Q52` were retired on 2026-09-14, because each needed a firmware other than 1.21. |
 | **claim** | States *what the integration depends on*, in a way a real panel can prove false, so the status is a clear yes or no. Never states what the spec says. |
 | **vs spec** | `agrees` / `disagrees` / `silent`. How the vendor's OpenAPI document relates to the claim. A `disagrees` row is the most valuable kind. It records a place where a future firmware could quietly go back to the documented behaviour. |
 | **tier** | The probe tier, which is the hazard class. It matches the probe script's flags: `read`, `write`, `destructive`, `thermal`, `manual`. `manual` means no script can run it. |
@@ -44,7 +44,7 @@ probe.py --thermal       → + heater-on sequences                (y/N, TTY requ
 
 `/api/reset/factory` is **structurally absent** from the probe. The path string appears nowhere in
 its source, and a test asserts that. A factory reset unpairs the panel from the MyHeatit app and
-leaves it off WiFi. It is `manual` tier (Q52) and always will be.
+leaves it off WiFi. No row asks for one.
 
 `manual` rows have no script. Each has a numbered procedure in the appendix. Our single 600 W panel
 at fw 1.21 can never close these rows, so the procedures are written for whoever has different
@@ -91,10 +91,9 @@ v1 claimed, with its corrections added at the end and dated.
 | Q13 | Eco mode regulates to `ecoSetpoint` | silent | thermal | verified fw 1.21 on 600 W, 1000 W | [#8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8), [#89](https://github.com/Normio/HeatIt-Wifi-Panel/issues/89) | [#8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8) climate presets, the founding assumption |
 | Q14 | Either setpoint bank can be written in any panel mode, and only the live setpoint regulates | silent | write | verified fw 1.21 on 600 W, 1000 W | [#8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8) | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) setpoint numbers |
 | Q15 | The temperature limits bound **both** banks, `min < max` is enforced, and narrowing a limit clamps a stored setpoint | silent | write | verified fw 1.21 on 600 W, 1000 W | [#8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8) | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) dynamic bounds |
-| Q16 | The temperature limits also constrain low temperature protection | silent | manual | open | [P-7](#p-7) | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) entity table |
 | Q17 | A `loadLimit` above the reported `maxLoad` is rejected, not accepted and then misbehaving | silent | write | verified fw 1.21 on 600 W, 1000 W | [#54](https://github.com/Normio/HeatIt-Wifi-Panel/issues/54) | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) load limit bounds |
 | Q18 | `state` reads `Idle` when the panel mode is Off | agrees | write | verified fw 1.21 on 600 W, 1000 W | [#8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8) | [#8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8) `hvac_action` mapping |
-| Q19 | `state` reads `Heating` whenever the relay is closed, including while open window detection or low temperature protection is overriding | silent | manual | open | [P-4](#p-4), [P-7](#p-7) | [#8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8) `hvac_action` mapping |
+| Q19 | `state` reads `Heating` whenever the relay is closed, including while open window detection is overriding | silent | manual | open | [P-4](#p-4) | [#8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8) `hvac_action` mapping |
 | Q20 | `currentPower` trails the relay by ~15 s and must never drive `hvac_action` | silent | thermal | verified fw 1.21 on 600 W, 1000 W | [#8](https://github.com/Normio/HeatIt-Wifi-Panel/issues/8) | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) power sensor |
 | Q21 | A kWh reset sets the energy counter to exactly `0.00`, never a partial value | silent | destructive | verified fw 1.21 on 600 W, 1000 W | [#18](https://github.com/Normio/HeatIt-Wifi-Panel/issues/18) | [#18](https://github.com/Normio/HeatIt-Wifi-Panel/issues/18) `total_increasing` and the 10 % dip rule |
 | Q22 | `totalConsumption` carries two decimals on the wire | agrees | read | verified fw 1.21 on 600 W, 1000 W | [#13](https://github.com/Normio/HeatIt-Wifi-Panel/issues/13) | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) energy sensor |
@@ -124,10 +123,7 @@ v1 claimed, with its corrections added at the end and dated.
 | Q46 | The energy counter advances in steps of no more than 0.05 kWh at any wattage | silent | manual | open | [P-5](#p-5), [#89](https://github.com/Normio/HeatIt-Wifi-Panel/issues/89) | [#18](https://github.com/Normio/HeatIt-Wifi-Panel/issues/18) one lost step per reset |
 | Q47 | `OWD.activeTime` counts down in seconds while `activeNow` is true | agrees | manual | open | [P-4](#p-4) | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) open-window duration sensor |
 | Q48 | `externalSensorFallback` appears in status once an external sensor is paired | silent | manual | open | [P-6](#p-6) | [#12](https://github.com/Normio/HeatIt-Wifi-Panel/issues/12) observed parameters only |
-| Q49 | `lowTemperatureProtection` appears in status on some firmware | silent | manual | open | [P-7](#p-7) | [#12](https://github.com/Normio/HeatIt-Wifi-Panel/issues/12) observed parameters only |
 | Q50 | A settings reset sets `loadLimit` to the unit's own `maxLoad` on a **second model**, meaning any unit whose `maxLoad` is not 6 (a unit above 1500 W would also separate `maxLoad` from `min(maxLoad, 15)`, which neither probed unit can) | disagrees | manual | verified fw 1.21 on 1000 W | [#74](https://github.com/Normio/HeatIt-Wifi-Panel/issues/74), [P-8](#p-8) | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) load limit bounds. Q53 is shown on the 600 W unit, and [#74](https://github.com/Normio/HeatIt-Wifi-Panel/issues/74) says why the 1000 W run did not show it |
-| Q51 | The 0.5 °C setpoint grid and the 0.1 °C calibration grid hold on firmwares other than 1.21 | silent | manual | open | [P-9](#p-9) | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) number steps |
-| Q52 | The device `id` survives a factory reset and a firmware update | silent | manual | open | [P-1](#p-1) | `docs/adr/0003-device-id-as-unique-id.md`, every entity is orphaned if the id changes |
 | Q53 | A settings reset sets every parameter to the vendor document's stated default **except `loadLimit`, which it sets to the unit's own `maxLoad`** | disagrees | destructive | verified fw 1.21 on 600 W, 1000 W | [#74](https://github.com/Normio/HeatIt-Wifi-Panel/issues/74), [#73](https://github.com/Normio/HeatIt-Wifi-Panel/issues/73) | `docs/api/heatit-wifi-panel-openapi.yaml`, the only claim we have about post-reset state, and wrong in this one place. Q50 is the same fact from the other side, on a unit whose `maxLoad` is not 6 |
 | Q54 | `/api/status` is computed fresh for each request, not served from a cache | silent | read | verified fw 1.21 on 600 W, 1000 W | [#13](https://github.com/Normio/HeatIt-Wifi-Panel/issues/13) | [#12](https://github.com/Normio/HeatIt-Wifi-Panel/issues/12) fixture diff carries live-value noise |
 | Q55 | A POST with no parameters gets no response at all: the firmware closes the connection, and the documented 422 does not exist | disagrees | write | verified fw 1.21 on 600 W, 1000 W | [#7](https://github.com/Normio/HeatIt-Wifi-Panel/issues/7) | [#14](https://github.com/Normio/HeatIt-Wifi-Panel/issues/14) write error handling |
@@ -135,7 +131,7 @@ v1 claimed, with its corrections added at the end and dated.
 | Q57 | A reset returns `{"status":"Success"}` with the `status` key, the same as parameter writes, not the documented `reset` key | disagrees | destructive | verified fw 1.21 on 600 W, 1000 W | [#7](https://github.com/Normio/HeatIt-Wifi-Panel/issues/7) | [#7](https://github.com/Normio/HeatIt-Wifi-Panel/issues/7) client response parser |
 | Q58 | `sensorMode=true` on a panel with no external sensor paired returns a success echo but is not applied: a silent undo | silent | write | verified fw 1.21 on 600 W, 1000 W | [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) | [#14](https://github.com/Normio/HeatIt-Wifi-Panel/issues/14) silent-undo warning, [#11](https://github.com/Normio/HeatIt-Wifi-Panel/issues/11) switch entity |
 
-**48 verified at firmware 1.21 (47 on the 600 W unit, 47 on the 1000 W unit), 10 open, 12 `disagrees`.** Nothing is `contradicted`. The places
+**48 verified at firmware 1.21 (47 on the 600 W unit, 47 on the 1000 W unit), 6 open, 12 `disagrees`.** Nothing is `contradicted`. The places
 where the vendor document is simply wrong are recorded as `disagrees`, which is a different thing.
 Those claims were never true. They did not stop being true. CI holds the three figures in the bold
 sentence to the table, the two unit counts included.
@@ -149,21 +145,6 @@ That is how a row becomes verified for a firmware or a model we have never seen.
 Record three things with every result: the **firmware** string, the **model** string, and `maxLoad`,
 all from `GET /api/status`. A result without them cannot go into the register. `maxLoad` is what
 names the unit in a status: 6 is the 600 W panel, 10 the 1000 W panel.
-
-<a id="p-1"></a>
-### P-1 — the device `id` across a factory reset and a firmware update (Q52)
-
-This is the one identity claim ADR-0003 rests on. It is destructive and disruptive. A factory reset
-unpairs the panel from the MyHeatit app and drops it off WiFi.
-
-1. `GET /api/status`. Record `id` verbatim, and `Network.mac`.
-2. Factory reset the panel from the device itself. See the vendor manual. Do **not** use this API.
-3. Re-pair in the MyHeatit app. Note the new IP address.
-4. `GET /api/status`. Record `id` verbatim.
-5. Separately, if a firmware update becomes available: record `id` and `firmware` before the update,
-   apply it, then record both after.
-
-Report: both `id` values, both `firmware` values, and whether `Network.mac` changed.
 
 <a id="p-2"></a>
 ### P-2 — on-segment discovery (Q28)
@@ -253,20 +234,6 @@ Report: the full raw status body at each step. On this firmware, `sensorMode=tru
 unit is silently ignored behind a success echo. So step 3 is the only thing that can tell "absent"
 from "conditional".
 
-<a id="p-7"></a>
-### P-7 — a firmware carrying low temperature protection (Q16, Q19, Q49)
-
-Needs a firmware other than 1.21, one where the parameter actually exists.
-
-1. `GET /api/status`. Confirm `lowTemperatureProtection` is present, and record its shape. The
-   vendor document uses one wire name for both the threshold and the live state.
-2. Set a threshold above current room temperature and record `state` and `currentPower` once the
-   relay closes.
-3. Set `minimumTemperatureLimit` above the threshold, then below it. Record the threshold after each
-   write. Do the limits clamp it?
-
-Report: the raw status at each step, and the firmware string.
-
 <a id="p-8"></a>
 ### P-8 — settings reset on a second model (Q50)
 
@@ -294,18 +261,3 @@ document's fixed 15. This run asks the same question of a second model. It
 still cannot settle one thing: at `maxLoad` 10 or 15, "lands on `maxLoad`" and
 "lands on `min(maxLoad, 15)`" predict the same value. Only a unit above
 1500 W can separate them.
-
-<a id="p-9"></a>
-### P-9 — quantisation on another firmware (Q51)
-
-Needs any panel whose `firmware` is not `1.21`. It is benign and reverts itself. It has no thermal
-effect if you stay below room temperature.
-
-1. Record `heatingSetpoint` and `sensorCalibration`.
-2. Write `heatingSetpoint` to an off-grid value below room temperature (e.g. `18.3`). Record the write
-   echo and the value in `/api/status` afterwards. Was it snapped, rejected, or accepted as sent?
-3. Write `minimumTemperatureLimit` to an off-grid value. Record the same.
-4. Write `sensorCalibration=0.1`. Record the same.
-5. Restore all three to their original values and verify with a status read.
-
-Report: firmware, and for each write the echo body and the subsequent status value.
