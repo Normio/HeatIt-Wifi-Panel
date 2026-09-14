@@ -1715,6 +1715,31 @@ rather than a surprise.
 Corrections to this document after v1 was frozen. Each entry names the register row or issue that
 forced it, and the PR that carried it.
 
+**2026-09-14 — register rows Q16, Q48, Q49, Q51 and Q52 are retired** (§11.2, [PR #91](https://github.com/Normio/HeatIt-Wifi-Panel/pull/91)).
+§11.2's first gate item asks for every register row verified. Five rows can never be.
+
+Four need a firmware other than 1.21. Heatit has shipped none and may never ship one.
+
+- Q16 and Q49 ask about `lowTemperatureProtection`, a parameter 1.21 does not return.
+- Q51 asks whether the setpoint and calibration grids hold on another firmware.
+- Q52 asks whether the device `id` survives a factory reset **and** a firmware update.
+
+Q48 needs an external sensor paired. Neither the MyHeatit app nor Heatit's
+[installer's manual](https://media.heatit.com/5140) (Ver-D, 01.09.2025) offers a way to pair one.
+The manual names only the panel's internal sensors, and its configuration table lists neither
+`sensorMode` nor low temperature protection.
+
+The rows and their procedures, P-1, P-6, P-7 and P-9, leave the register. Their ids are never
+reused. §12's "P-1…P-9" now runs P-2…P-8 without P-6 and P-7. Q19's claim drops its low
+temperature protection half and keeps the open window override, which a 1.21 panel can show.
+
+What the rows tracked stays true. §2.4 still treats `externalSensorFallback` and
+`lowTemperatureProtection` as unobserved, and §13 item 5's entities still come back only with a
+captured fixture. A panel that starts returning either parameter shows it in the raw status bytes
+of its diagnostics download. §4.1 and §13 still call the id's survival untested, and it still is.
+The MAC in `DeviceInfo.connections` stays the migration path if a firmware ever changes the id. A
+new firmware opens new rows, not these.
+
 **2026-09-13 — a status names the units a row was shown on** ([#89](https://github.com/Normio/HeatIt-Wifi-Panel/issues/89), [PR #90](https://github.com/Normio/HeatIt-Wifi-Panel/pull/90)).
 §12.1 and §12.4 read a status as `verified fw <v>`, one firmware and nothing about which panel.
 With two units run through every tier, "verified" no longer said on what. A status is now
