@@ -13,8 +13,7 @@ The repository moved. The links on the integration's page follow it.
 
 ### Changed
 
-- The documentation and issue links on the integration's page now point at  
-`Normio/HeatIt-Wifi-Panel`
+- The documentation and issue links on the integration's page now point at `Normio/HeatIt-Wifi-Panel`
 
 ## [0.4.0] - 2026-09-12
 
