@@ -1715,7 +1715,7 @@ rather than a surprise.
 Corrections to this document after v1 was frozen. Each entry names the register row or issue that
 forced it, and the PR that carried it.
 
-**2026-09-14 — register rows Q16, Q49, Q51 and Q52 are retired** (§11.2).
+**2026-09-14 — register rows Q16, Q49, Q51 and Q52 are retired** (§11.2, [PR #91](https://github.com/Normio/HeatIt-Wifi-Panel/pull/91)).
 §11.2's first gate item asks for every register row verified. Four rows can never be, because each
 needs a firmware other than 1.21. Heatit has shipped none and may never ship one.
 
