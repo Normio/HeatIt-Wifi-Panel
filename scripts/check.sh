@@ -28,7 +28,7 @@ run_lint() {
 }
 
 run_tests() {
-  mypy custom_components scripts tests
+  python3 scripts/check_types.py
   # In this half, not the lint half, because it parses the yaml with the
   # loader hassfest uses, which is Home Assistant's (§9.2). Every `done` rule
   # names the file that proves it, so a deleted test fails here.

@@ -9,8 +9,7 @@ firmware without it has no such entity.
 
 from typing import TYPE_CHECKING
 
-from homeassistant.components.binary_sensor import DOMAIN as BINARY_SENSOR_DOMAIN
-from homeassistant.const import STATE_OFF, STATE_ON, STATE_UNAVAILABLE
+from homeassistant.const import STATE_OFF, STATE_ON, STATE_UNAVAILABLE, Platform
 from homeassistant.helpers import entity_registry as er
 
 from custom_components.heatit_wifi_panel import binary_sensor
@@ -32,7 +31,7 @@ READ_PATH = "parameters.OWD.activeNow"
 
 def detection_id(hass: HomeAssistant) -> str:
     """Return the one binary sensor's entity id, asked of the registry."""
-    return entity_id(hass, BINARY_SENSOR_DOMAIN, KEY)
+    return entity_id(hass, Platform.BINARY_SENSOR, KEY)
 
 
 def test_a_read_only_platform_serialises_nothing() -> None:
